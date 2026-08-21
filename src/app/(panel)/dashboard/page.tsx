@@ -1,0 +1,53 @@
+import getSesion from '@/lib/getSession'
+import { redirect } from 'next/navigation'
+import { ButtonCopyLink } from './_components/button-copy-link'
+import { Reminders } from './_components/reminder/reminders'
+import { Appointments } from './_components/appointments/appointments'
+import { checkSubscription } from '@/utils/permissions/checkSubscription'
+import { LabelSubscription } from '@/components/ui/label-subscription'
+import { PageContainer, PageHeader } from "@/components/ui/page-layout"
+
+export default async function Dashboard() {
+  const session = await getSesion()
+
+  if (!session) {
+    redirect("/")
+  }
+
+  const subscription = await checkSubscription(session?.user?.id!)
+
+  return (
+    <PageContainer className="space-y-6">
+      <PageHeader 
+        title="Visão Geral" 
+        description="Acompanhe sua agenda e lembretes para hoje."
+      >
+        <ButtonCopyLink userId={session.user?.id!} />
+      </PageHeader>
+
+      {subscription?.subscriptionStatus === "EXPIRED" && (
+        <LabelSubscription expired={true} />
+      )}
+
+      {subscription?.subscriptionStatus === "TRIAL" && (
+        <div className='bg-emerald-50 text-emerald-800 text-sm md:text-base px-4 py-3 rounded-xl border border-emerald-100 shadow-sm flex items-center gap-2'>
+          <p className='font-semibold'>
+            {subscription?.message}
+          </p>
+        </div>
+      )}
+
+      {subscription?.subscriptionStatus !== "EXPIRED" && (
+        <section className='grid grid-cols-1 xl:grid-cols-3 gap-6'>
+          <div className="xl:col-span-2">
+            <Appointments userId={session.user?.id!} />
+          </div>
+          <div className="xl:col-span-1">
+            <Reminders userId={session.user?.id!} />
+          </div>
+        </section>
+      )}
+
+    </PageContainer>
+  )
+}
