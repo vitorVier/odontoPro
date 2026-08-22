@@ -18,7 +18,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Label } from '@/components/ui/label'
 import {
   Dialog,
   DialogContent,
@@ -31,7 +30,6 @@ import {
 import { Button } from '@/components/ui/button'
 import { ArrowRight } from 'lucide-react'
 
-import { cn } from '@/lib/utils'
 import { Prisma } from '@prisma/client'
 import { updateProfile } from '../_actions/update-profile'
 import { toast } from 'sonner'
@@ -39,6 +37,7 @@ import { formatPhone } from '@/utils/formatPhone'
 import { signOut, useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { AvatarProfile } from './profile-avatar'
+import { WeekDaysSelector } from './week-days-selector'
 
 type UserWithSubscription = Prisma.UserGetPayload<{
   include: {
@@ -62,14 +61,15 @@ export function ProfileContent({ user }: ProfileContentProps) {
     address: user.address,
     phone: user.phone,
     status: user.status,
-    timeZone: user.timeZone
+    timeZone: user.timeZone,
+    weekDays: user.weekDays
   });
 
 
   function generateTimeSlots(): string[] {
     const hours: string[] = [];
 
-    for (let i = 8; i <= 24; i++) {
+    for (let i = 0; i <= 23; i++) {
       for (let j = 0; j < 2; j++) {
         const hour = i.toString().padStart(2, "0")
         const minute = (j * 30).toString().padStart(2, "0")
@@ -123,211 +123,429 @@ export function ProfileContent({ user }: ProfileContentProps) {
   }
 
   return (
-    <div className='mx-auto'>
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)}>
-          <Card>
-            <CardHeader>
-              <CardTitle>Meu Perfil</CardTitle>
-            </CardHeader>
-            <CardContent className='space-y-6'>
-              <div className='flex justify-center'>
-                <AvatarProfile
-                  avatarUrl={user.image}
-                  userId={user.id}
-                />
+  <div className="mx-auto w-full">
+    <Form {...form}>
+      <form
+        onSubmit={form.handleSubmit(onSubmit)}
+        className="space-y-6"
+      >
+        <Card className="overflow-hidden border-gray-200 shadow-sm">
+          <CardHeader className="border-b bg-gray-50/50">
+            <CardTitle className="text-lg">
+              Perfil da clínica
+            </CardTitle>
+
+            <p className="text-sm text-muted-foreground">
+              Informações que serão apresentadas aos seus pacientes.
+            </p>
+          </CardHeader>
+
+          <CardContent className="space-y-6 pt-6">
+            {/* Avatar */}
+            <div className="flex flex-col items-center gap-3">
+              <AvatarProfile
+                avatarUrl={user.image}
+                userId={user.id}
+              />
+
+              <div className="text-center">
+                <p className="text-sm font-medium text-gray-900">
+                  Foto da clínica
+                </p>
+
+                <p className="text-xs text-muted-foreground">
+                  Clique na imagem para alterar
+                </p>
               </div>
+            </div>
 
-              <div className='space-y-4'>
-                <FormField
-                  control={form.control}
-                  name="name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className='font-semibold'>Nome completo</FormLabel>
-                      <FormControl>
-                        <Input
-                          {...field}
-                          placeholder='Digite o nome da clinica...'
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+            {/* Nome */}
+            <FormField
+              control={form.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="font-semibold">
+                    Nome da clínica
+                  </FormLabel>
 
-                <FormField
-                  control={form.control}
-                  name="address"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className='font-semibold'>
-                        Endereço completo:
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          {...field}
-                          placeholder='Digite o endereço da clinica...'
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                  <FormControl>
+                    <Input
+                      {...field}
+                      placeholder="Ex.: Odonto Sorriso"
+                      className="h-11"
+                    />
+                  </FormControl>
 
-                <FormField
-                  control={form.control}
-                  name="phone"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className='font-semibold'>
-                        Telefone
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          {...field}
-                          placeholder='(67) 99912-3456'
-                          onChange={(e) => {
-                            const formattedValue = formatPhone(e.target.value)
-                            field.onChange(formattedValue)
-                          }}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                  <p className="text-xs text-muted-foreground">
+                    Esse nome será exibido na página pública da clínica.
+                  </p>
 
-                <FormField
-                  control={form.control}
-                  name="status"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className='font-semibold'>
-                        Status da clinica
-                      </FormLabel>
-                      <FormControl>
-                        <Select
-                          onValueChange={field.onChange}
-                          defaultValue={field.value ? "active" : "inactive"}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Selecione o status da clincia" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="active">ATIVO (clinica aberta)</SelectItem>
-                            <SelectItem value="inactive">INATIVO (clinica fechada)</SelectItem>
-                          </SelectContent>
-                        </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </CardContent>
+        </Card>
 
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
+        <Card className="border-gray-200 shadow-sm">
+          <CardHeader className="border-b bg-gray-50/50">
+            <CardTitle className="text-lg">
+              Informações de contato
+            </CardTitle>
 
-                <div className='space-y-2'>
-                  <Label className='font-semibold'>
-                    Configurar horários da clinica
-                  </Label>
+            <p className="text-sm text-muted-foreground">
+              Mantenha seus dados atualizados para facilitar o contato
+              com seus pacientes.
+            </p>
+          </CardHeader>
 
-                  <Dialog open={dialogIsOpen} onOpenChange={setDialogIsOpen} >
-                    <DialogTrigger asChild>
-                      <Button variant="outline" className='w-full justify-between'>
-                        Clique aqui para selecionar horários
-                        <ArrowRight className='w-5 h-5' />
-                      </Button>
-                    </DialogTrigger>
+          <CardContent className="space-y-5 pt-6">
+            {/* Endereço */}
+            <FormField
+              control={form.control}
+              name="address"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="font-semibold">
+                    Endereço completo
+                  </FormLabel>
 
-                    <DialogContent>
-                      <DialogHeader>
-                        <DialogTitle>Horários da clinica</DialogTitle>
-                        <DialogDescription>
-                          Selecione abaixo os horários de funcionamento da clinica:
-                        </DialogDescription>
-                      </DialogHeader>
+                  <FormControl>
+                    <Input
+                      {...field}
+                      placeholder="Rua, número, bairro, cidade - UF"
+                      className="h-11"
+                    />
+                  </FormControl>
 
-                      <section className='py-4'>
-                        <p className='text-sm text-muted-foreground mb-2'>
-                          Clique nos horários abaixo para marcar ou desmcar:
-                        </p>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-                        <div className='grid grid-cols-5 gap-2'>
-                          {hours.map((hour) => (
+            {/* Telefone */}
+            <FormField
+              control={form.control}
+              name="phone"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="font-semibold">
+                    Telefone
+                  </FormLabel>
+
+                  <FormControl>
+                    <Input
+                      {...field}
+                      placeholder="(55) 99999-9999"
+                      className="h-11"
+                      onChange={(e) => {
+                        const formattedValue = formatPhone(
+                          e.target.value
+                        )
+
+                        field.onChange(formattedValue)
+                      }}
+                    />
+                  </FormControl>
+
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </CardContent>
+        </Card>
+
+        <Card className="border-gray-200 shadow-sm">
+          <CardHeader className="border-b bg-gray-50/50">
+            <CardTitle className="text-lg">
+              Funcionamento
+            </CardTitle>
+
+            <p className="text-sm text-muted-foreground">
+              Defina os dias e horários disponíveis para atendimento.
+            </p>
+          </CardHeader>
+
+          <CardContent className="space-y-6 pt-6">
+
+            {/* Dias */}
+            <FormField
+              control={form.control}
+              name="weekDays"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="font-semibold">
+                    Dias de atendimento
+                  </FormLabel>
+
+                  <FormControl>
+                    <WeekDaysSelector
+                      value={field.value}
+                      onChange={field.onChange}
+                    />
+                  </FormControl>
+
+                  <p className="text-xs text-muted-foreground">
+                    Selecione os dias em que a clínica realiza
+                    atendimentos.
+                  </p>
+
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* Horários */}
+            <div className="rounded-xl border border-gray-200 bg-gray-50/60 p-4">
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <p className="text-sm font-semibold text-gray-900">
+                    Horários disponíveis
+                  </p>
+
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    {selectedHours.length > 0
+                      ? `${selectedHours.length} horários selecionados`
+                      : "Nenhum horário selecionado"}
+                  </p>
+                </div>
+
+                <Dialog
+                  open={dialogIsOpen}
+                  onOpenChange={setDialogIsOpen}
+                >
+                  <DialogTrigger asChild>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="shrink-0"
+                    >
+                      Configurar
+                      <ArrowRight className="ml-2 h-4 w-4" />
+                    </Button>
+                  </DialogTrigger>
+
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>
+                        Horários da clínica
+                      </DialogTitle>
+
+                      <DialogDescription>
+                        Selecione os horários em que sua clínica
+                        estará disponível para agendamento.
+                      </DialogDescription>
+                    </DialogHeader>
+
+                    <section className="py-4">
+                      <p className="mb-3 text-sm text-muted-foreground">
+                        Clique nos horários para selecionar ou remover.
+                      </p>
+
+                      <div className="grid grid-cols-4 gap-2 sm:grid-cols-5">
+                        {hours.map((hour) => {
+                          const selected =
+                            selectedHours.includes(hour)
+
+                          return (
                             <Button
                               key={hour}
-                              variant="outline"
-                              className={cn('h-10', selectedHours.includes(hour) && 'border-2 border-emerald-500 text-primary')}
+                              type="button"
+                              variant={
+                                selected
+                                  ? "default"
+                                  : "outline"
+                              }
+                              className={
+                                selected
+                                  ? "bg-emerald-500 hover:bg-emerald-600"
+                                  : ""
+                              }
                               onClick={() => toggleHour(hour)}
                             >
                               {hour}
                             </Button>
-                          ))}
-                        </div>
+                          )
+                        })}
+                      </div>
+                    </section>
 
-                      </section >
-
+                    <div className="flex justify-between gap-2 border-t pt-4">
                       <Button
-                        className='w-full'
-                        onClick={() => setDialogIsOpen(false)}
+                        type="button"
+                        variant="ghost"
+                        onClick={() => setSelectedHours([])}
                       >
-                        Fechar
+                        Limpar horários
                       </Button>
 
-                    </DialogContent>
-                  </Dialog>
-                </div>
-
-                <FormField
-                  control={form.control}
-                  name="timeZone"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className='font-semibold'>
-                        Selecione o fuso horário
-                      </FormLabel>
-                      <FormControl>
-
-                        <Select
-                          onValueChange={field.onChange}
-                          defaultValue={field.value}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Selecione o seu fuso horário" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {timeZones.map((zone) => (
-                              <SelectItem key={zone} value={zone}>
-                                {zone}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
-
-                <Button
-                  type="submit"
-                  className='w-full bg-emerald-500 hover:bg-emerald-400'
-                >
-                  Salvar alterações
-                </Button>
+                      <Button
+                        type="button"
+                        onClick={() => setDialogIsOpen(false)}
+                      >
+                        Concluir
+                      </Button>
+                    </div>
+                  </DialogContent>
+                </Dialog>
               </div>
-            </CardContent>
-          </Card>
-        </form>
-      </Form>
 
-      <section className='mt-4'>
-        <Button
-          variant="destructive"
-          onClick={handleLogout}
-        >
-          Sair da conta
-        </Button>
-      </section>
+              {/* Preview dos horários */}
+              {selectedHours.length > 0 && (
+                <div className="mt-4 border-t border-gray-200 pt-4">
+                  <p className="mb-2 text-xs font-medium text-gray-500">
+                    Horários selecionados
+                  </p>
+
+                  <div className="flex flex-wrap gap-2">
+                    {selectedHours.map((hour) => (
+                      <span
+                        key={hour}
+                        className="rounded-md border border-gray-200 bg-white px-2.5 py-1 text-xs font-medium text-gray-700"
+                      >
+                        {hour}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-gray-200 shadow-sm">
+          <CardHeader className="border-b bg-gray-50/50">
+            <CardTitle className="text-lg">
+              Preferências
+            </CardTitle>
+
+            <p className="text-sm text-muted-foreground">
+              Configurações utilizadas pelo sistema de agendamento.
+            </p>
+          </CardHeader>
+
+          <CardContent className="space-y-5 pt-6">
+            <FormField
+              control={form.control}
+              name="timeZone"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="font-semibold">
+                    Fuso horário
+                  </FormLabel>
+
+                  <FormControl>
+                    <Select
+                      value={field.value}
+                      onValueChange={field.onChange}
+                    >
+                      <SelectTrigger className="h-11">
+                        <SelectValue placeholder="Selecione o fuso horário" />
+                      </SelectTrigger>
+
+                      <SelectContent>
+                        {timeZones.map((zone) => (
+                          <SelectItem
+                            key={zone}
+                            value={zone}
+                          >
+                            {zone}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </FormControl>
+
+                  <p className="text-xs text-muted-foreground">
+                    Os horários dos agendamentos serão calculados
+                    utilizando este fuso horário.
+                  </p>
+
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </CardContent>
+        </Card>
+
+        <Card className="border-gray-200 shadow-sm">
+          <CardHeader className="border-b bg-gray-50/50">
+            <CardTitle className="text-lg">
+              Status da clínica
+            </CardTitle>
+
+            <p className="text-sm text-muted-foreground">
+              Controle se sua clínica está disponível para novos
+              agendamentos.
+            </p>
+          </CardHeader>
+
+          <CardContent className="pt-6">
+            <FormField
+              control={form.control}
+              name="status"
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <Select
+                      value={
+                        field.value
+                          ? "active"
+                          : "inactive"
+                      }
+                      onValueChange={(value) => {
+                        field.onChange(
+                          value === "active"
+                        )
+                      }}
+                    >
+                      <SelectTrigger className="h-12">
+                        <SelectValue />
+                      </SelectTrigger>
+
+                      <SelectContent>
+                        <SelectItem value="active">
+                          ATIVA — disponível para agendamentos
+                        </SelectItem>
+
+                        <SelectItem value="inactive">
+                          INATIVA — não receberá novos agendamentos
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </FormControl>
+
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </CardContent>
+        </Card>
+
+        <div className="flex flex-col gap-3 sm:flex-row sm:justify-end">
+          <Button
+            type="submit"
+            disabled={form.formState.isSubmitting}
+            className="h-11 bg-emerald-500 px-8 hover:bg-emerald-600"
+          >
+            {form.formState.isSubmitting
+              ? "Salvando alterações..."
+              : "Salvar alterações"}
+          </Button>
+        </div>
+      </form>
+    </Form>
+
+    <div className="border-t border-gray-200 pt-6">
+      <Button
+        type="button"
+        variant="destructive"
+        onClick={handleLogout}
+      >
+        Sair da conta
+      </Button>
     </div>
-  )
+  </div>
+)
 }

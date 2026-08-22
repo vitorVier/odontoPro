@@ -1,85 +1,109 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { CalendarClock, CalendarX, User } from "lucide-react"
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
+import {
+  CalendarClock,
+  CalendarX,
+  User,
+} from "lucide-react"
 import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
 import { Prisma } from "@prisma/client"
 
 type AppointmentWithService = Prisma.AppointmentGetPayload<{
-  include: { service: true }
+  include: {
+    service: true
+  }
 }>
 
 interface UpcomingAppointmentsProps {
   appointments: AppointmentWithService[]
 }
 
-export function UpcomingAppointments({ appointments }: UpcomingAppointmentsProps) {
+export function UpcomingAppointments({
+  appointments,
+}: UpcomingAppointmentsProps) {
+
   return (
-    <Card className="border border-border/50 bg-card shadow-xs transition-all hover:shadow-md duration-300">
-      {/* Cabeçalho Alinhado com o TopServices */}
-      <CardHeader className="flex flex-row items-center justify-between pb-3 border-b border-border/30">
+    <Card className="border-border/50 bg-card shadow-xs">
+      <CardHeader className="flex flex-row items-center justify-between pb-3">
         <div className="space-y-0.5">
-          <CardTitle className="text-sm font-bold tracking-tight text-foreground">
+          <CardTitle className="text-sm font-semibold tracking-tight">
             Próximos Agendamentos
           </CardTitle>
+
           <p className="text-[11px] text-muted-foreground">
             Consultas agendadas para os próximos dias
           </p>
         </div>
-        <div className="p-2 bg-muted/40 rounded-lg text-muted-foreground shrink-0">
-          <CalendarClock className="w-4 h-4 text-primary" />
+
+        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted/50">
+          <CalendarClock className="h-4 w-4 text-primary" />
         </div>
       </CardHeader>
 
-      <CardContent className="pt-4">
+      <CardContent className="pt-1">
         {appointments.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-8 text-center space-y-2">
-            <CalendarX className="w-6 h-6 text-muted-foreground/40" />
-            <p className="text-xs text-muted-foreground max-w-50">
-              Nenhum agendamento futuro localizado.
+          <div className="flex flex-col items-center justify-center py-10 text-center">
+            <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-muted/50">
+              <CalendarX className="h-5 w-5 text-muted-foreground/50" />
+            </div>
+
+            <p className="text-sm font-medium text-foreground">
+              Nenhum agendamento
+            </p>
+
+            <p className="mt-1 max-w-55 text-xs text-muted-foreground">
+              Não há consultas futuras para os próximos dias.
             </p>
           </div>
         ) : (
-          <div className="space-y-2.5">
+
+          <div className="divide-y divide-border/40">
             {appointments.map((apt) => {
-              // Separa o dia e o mês abreviado de forma elegante
-              const dateObj = new Date(apt.appointmentDate);
-              const dayStr = format(dateObj, "dd");
-              const monthStr = format(dateObj, "MMM", { locale: ptBR }).replace(".", "");
+              const dateObj = new Date(apt.appointmentDate)
+              const day = format(dateObj, "dd")
+              const month = format(dateObj, "MMM", {
+                locale: ptBR,
+              }).replace(".", "")
 
               return (
                 <div
                   key={apt.id}
-                  className="group flex items-center gap-3 p-2.5 rounded-xl border border-border/40 bg-muted/5 hover:bg-muted/30 hover:border-border transition-all duration-200"
+                  className="group flex items-center gap-3 py-3 first:pt-2 last:pb-2"
                 >
-                  {/* Bloco de Data Estilo Calendário Físico */}
-                  <div className="w-11 h-11 rounded-lg bg-primary/10 border border-primary/10 flex flex-col items-center justify-center shrink-0 text-center select-none group-hover:bg-primary/15 transition-colors">
-                    <span className="text-xs font-bold text-primary leading-tight">
-                      {dayStr}
+                  {/* Data */}
+                  <div className="flex h-10 w-10 shrink-0 flex-col items-center justify-center rounded-lg bg-muted/50">
+                    <span className="text-xs font-semibold text-foreground">
+                      {day}
                     </span>
-                    <span className="text-[9px] font-bold text-primary/70 uppercase tracking-wide leading-none">
-                      {monthStr}
+
+                    <span className="text-[9px] font-medium uppercase text-muted-foreground">
+                      {month}
                     </span>
                   </div>
 
-                  {/* Informações do Paciente e Procedimento */}
-                  <div className="flex-1 min-w-0 space-y-0.5">
+                  {/* Informações */}
+                  <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-1.5">
-                      <User className="w-3 h-3 text-muted-foreground/60 shrink-0" />
-                      <p className="text-sm font-bold text-foreground truncate group-hover:text-primary transition-colors">
+                      <User className="h-3.5 w-3.5 shrink-0 text-muted-foreground/60" />
+                      <p className="truncate text-sm font-medium text-foreground">
                         {apt.name}
                       </p>
                     </div>
-                    <p className="text-xs text-muted-foreground truncate pl-4">
+
+                    <p className="mt-0.5 truncate pl-5 text-xs text-muted-foreground">
                       {apt.service.name}
                     </p>
                   </div>
 
-                  {/* Horário de Atendimento Destacado */}
-                  <div className="text-right shrink-0">
-                    <span className="text-xs font-bold bg-muted text-muted-foreground px-2 py-1 rounded-md tracking-tight group-hover:bg-primary/10 group-hover:text-primary transition-colors">
-                      {apt.time}
-                    </span>
-                  </div>
+                  {/* Horário */}
+                  <span className="shrink-0 text-xs font-medium text-muted-foreground">
+                    {apt.time}
+                  </span>
                 </div>
               )
             })}

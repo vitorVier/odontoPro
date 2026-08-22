@@ -53,7 +53,7 @@ export function SubscriptionDetail({ subscription }: SubscriptionDetailProps) {
   }
 
   return (
-    <div className="max-w-2xl mx-auto py-8">
+    <div className="max-w-2xl py-8">
       {isCanceled && (
         <div className="mb-6 flex items-start sm:items-center gap-3 rounded-lg border border-amber-500/20 bg-amber-500/10 p-4 text-amber-600 dark:text-amber-500">
           <AlertTriangle className="h-5 w-5 shrink-0 mt-0.5 sm:mt-0" />

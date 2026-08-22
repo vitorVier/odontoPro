@@ -38,9 +38,13 @@ export async function checkSubscription(userId: string) {
   const trialEndDate = addDays(user.createdAt, TRIAL_DAYS)
   const daysRemaining = differenceInDays(trialEndDate, new Date())
 
+  const message = daysRemaining === 0 
+    ? "Último dia para aproveitar." 
+    : `Você está no período de teste gratuito. Faltam ${daysRemaining} dias.`
+
   return {
     subscriptionStatus: "TRIAL",
-    message: `Você está no período de teste gratuito. Faltam ${daysRemaining} dias.`,
+    message: message,
     planId: "TRIAL"
   }
 }

@@ -95,6 +95,7 @@ model User {
   timeZone           String?
   stripe_customer_id String?
   times              String[]  @default([])
+  weekDays           Int[]     @default([1, 2, 3, 4, 5])
 
   subscription Subscription?
   services     Service[]

@@ -1,33 +1,62 @@
-import { ReactNode } from "react";
-import { clsx } from "clsx";
+import { ReactNode } from "react"
+import { clsx } from "clsx"
 
 interface PageHeaderProps {
-  title: string;
-  description?: string;
-  children?: ReactNode;
-  className?: string;
+  title: string
+  description?: string
+  children?: ReactNode
+  className?: string
 }
 
-export function PageHeader({ title, description, children, className }: PageHeaderProps) {
+export function PageHeader({
+  title,
+  description,
+  children,
+  className,
+}: PageHeaderProps) {
   return (
-    <header className={clsx("flex flex-col md:flex-row md:items-center justify-between gap-4 bg-card p-6 rounded-2xl border border-border shadow-[0_2px_10px_-3px_rgba(0,0,0,0.02)] mb-6", className)}>
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight text-foreground">{title}</h1>
-        {description && <p className="text-muted-foreground text-sm mt-1">{description}</p>}
+    <header
+      className={clsx(
+        "flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-6",
+        className
+      )}
+    >
+      <div className="min-w-0">
+        <h1 className="text-xl sm:text-2xl font-semibold tracking-tight text-foreground">
+          {title}
+        </h1>
+
+        {description && (
+          <p className="mt-1 text-sm text-muted-foreground">
+            {description}
+          </p>
+        )}
       </div>
+
       {children && (
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 shrink-0">
           {children}
         </div>
       )}
     </header>
-  );
+  )
 }
 
-export function PageContainer({ children, className }: { children: ReactNode; className?: string }) {
+export function PageContainer({
+  children,
+  className,
+}: {
+  children: ReactNode
+  className?: string
+}) {
   return (
-    <main className={clsx("max-w-7xl mx-auto w-full", className)}>
+    <main
+      className={clsx(
+        "mx-auto w-full max-w-[1600px] px-4 sm:px-6 lg:px-8 2xl:px-10",
+        className
+      )}
+    >
       {children}
     </main>
-  );
+  )
 }

@@ -30,15 +30,11 @@ export default async function Dashboard() {
       </PageHeader>
 
       {subscription?.subscriptionStatus === "EXPIRED" && (
-        <LabelSubscription expired={true} />
+        <LabelSubscription variant="expired" />
       )}
 
       {subscription?.subscriptionStatus === "TRIAL" && (
-        <div className='bg-emerald-50 text-emerald-800 text-sm md:text-base px-4 py-3 rounded-xl border border-emerald-100 shadow-sm flex items-center gap-2'>
-          <p className='font-semibold'>
-            {subscription?.message}
-          </p>
-        </div>
+        <LabelSubscription variant="trial" message={subscription.message} />
       )}
 
       {subscription?.subscriptionStatus !== "EXPIRED" && (

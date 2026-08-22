@@ -1,104 +1,210 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { BarChart3, BarChart, Percent } from "lucide-react"
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card"
+
+import {
+  BarChart3,
+  BarChart,
+} from "lucide-react"
+
 import { formatCurrency } from "@/utils/formatCurrency"
+
 import { cn } from "@/lib/utils"
 
 interface MonthlyChartProps {
-  data: { month: string; count: number; revenue: number }[]
+  data: {
+    month: string
+    count: number
+    revenue: number
+  }[]
 }
 
 export function MonthlyChart({ data }: MonthlyChartProps) {
-  // Encontra o teto de agendamentos para definir a escala proporcional do gráfico
-  const maxCount = Math.max(...data.map((d) => d.count), 1)
+  const maxCount = Math.max(
+    ...data.map((item) => item.count),
+    1
+  )
 
   return (
-    <Card className="border border-border/50 bg-card shadow-xs transition-all hover:shadow-md duration-300">
-      {/* Cabeçalho Padronizado */}
-      <CardHeader className="flex flex-row items-center justify-between pb-3 border-b border-border/30">
-        <div className="space-y-0.5">
-          <CardTitle className="text-sm font-bold tracking-tight text-foreground">
-            Tendência de Consultas
-          </CardTitle>
-          <p className="text-[11px] text-muted-foreground">
-            Volume de agendamentos nos últimos 6 meses
-          </p>
-        </div>
-        <div className="p-2 bg-muted/40 rounded-lg text-muted-foreground shrink-0">
-          <BarChart3 className="w-4 h-4 text-primary" />
+    <Card className="border-gray-200 bg-white shadow-sm">
+      {/* HEADER */}
+      <CardHeader className="pb-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <CardTitle className="text-base font-semibold text-gray-900">
+              Tendência de consultas
+            </CardTitle>
+
+            <CardDescription className="mt-1 text-xs">
+              Agendamentos dos últimos 6 meses
+            </CardDescription>
+          </div>
+
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gray-50">
+            <BarChart3 className="h-4 w-4 text-gray-400" />
+          </div>
         </div>
       </CardHeader>
 
-      <CardContent className="pt-6">
+      <CardContent>
         {data.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-8 text-center space-y-2 h-44">
-            <BarChart className="w-6 h-6 text-muted-foreground/40" />
-            <p className="text-xs text-muted-foreground max-w-50">
-              Sem histórico disponível.
+          /* EMPTY STATE */
+          <div className="flex h-44 flex-col items-center justify-center text-center">
+            <BarChart className="h-6 w-6 text-gray-300" />
+
+            <p className="mt-3 text-sm text-gray-500">
+              Ainda não há dados suficientes.
+            </p>
+
+            <p className="mt-1 text-xs text-gray-400">
+              Os dados aparecerão conforme novos agendamentos forem realizados.
             </p>
           </div>
         ) : (
-          /* Container Principal do Gráfico */
-          <div className="flex items-end justify-between gap-3 h-44 pt-4 px-1">
-            {data.map(({ month, count, revenue }, idx) => {
-              const heightPct = maxCount > 0 ? (count / maxCount) * 100 : 0
-              const isLast = idx === data.length - 1
 
-              return (
-                <div 
-                  key={month} 
-                  className="flex flex-col items-center gap-2 flex-1 group relative h-full justify-end"
-                >
-                  {/* Tooltip Avançado com Grid Separador */}
-                  <div className="absolute -top-11 left-1/2 -translate-x-1/2 opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100 flex flex-col items-center z-30 pointer-events-none transition-all duration-200 origin-bottom">
-                    <div className="bg-popover border border-border/80 backdrop-blur-md rounded-xl p-2 shadow-lg text-[10px] whitespace-nowrap text-foreground font-medium space-y-0.5 min-w-27.5">
-                      <p className="text-muted-foreground border-b border-border/40 pb-0.5 text-center font-bold capitalize">
-                        {month}
-                      </p>
-                      <div className="flex justify-between gap-4 pt-0.5 px-0.5">
-                        <span>Consultas:</span>
-                        <span className="font-bold text-primary">{count}</span>
-                      </div>
-                      <div className="flex justify-between gap-4 px-0.5">
-                        <span>Faturamento:</span>
-                        <span className="font-bold text-emerald-500">{formatCurrency(revenue / 100)}</span>
-                      </div>
-                    </div>
-                    <div className="w-2 h-2 bg-popover border-b border-r border-border/80 rotate-45 -mt-1" />
-                  </div>
+          <div className="relative">
 
-                  {/* Coluna Gráfica */}
-                  <div className="w-full relative flex items-end h-27.5">
+            {/* LINHAS DE REFERÊNCIA */}
+            <div className="pointer-events-none absolute inset-x-0 top-0 h-32">
+              <div className="absolute inset-x-0 top-0 border-t border-gray-100" />
+              <div className="absolute inset-x-0 top-1/3 border-t border-gray-100" />
+              <div className="absolute inset-x-0 top-2/3 border-t border-gray-100" />
+              <div className="absolute inset-x-0 bottom-0 border-t border-gray-100" />
+            </div>
+
+            {/* GRÁFICO */}
+            <div className="relative flex h-44 items-end gap-3 pt-5">
+              {data.map(
+                ({ month, count, revenue }, index) => {
+                  const isLast =
+                    index === data.length - 1
+
+                  const heightPct =
+                    count > 0
+                      ? (count / maxCount) * 100
+                      : 0
+
+                  return (
                     <div
-                      className={cn(
-                        "w-full rounded-t-lg transition-all duration-500 ease-out cursor-pointer relative",
-                        isLast 
-                          ? "bg-linear-to-t from-primary to-primary/80 shadow-[0_-2px_8px_rgba(var(--primary),0.2)]" 
-                          : "bg-primary/20 group-hover:bg-primary/35"
-                      )}
-                      style={{ height: `${Math.max(heightPct, count > 0 ? 8 : 4)}%` }}
+                      key={month}
+                      className="group relative flex h-full flex-1 flex-col items-center justify-end"
                     >
-                      {/* Indicador Numérico Flutuante Discreto no Hover */}
-                      {count > 0 && (
-                        <span className="absolute -top-5 left-0 right-0 text-center text-[10px] font-bold text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                          {count}
-                        </span>
-                      )}
-                    </div>
-                  </div>
+                      {/* TOOLTIP */}
+                      <div
+                        className="
+                          pointer-events-none
+                          absolute
+                          bottom-[calc(100%-1rem)]
+                          left-1/2
+                          z-20
+                          -translate-x-1/2
+                          translate-y-1
+                          whitespace-nowrap
+                          rounded-md
+                          border
+                          border-gray-200
+                          bg-white
+                          px-3
+                          py-2
+                          text-xs
+                          shadow-sm
+                          opacity-0
+                          transition-all
+                          duration-150
+                          group-hover:translate-y-0
+                          group-hover:opacity-100
+                        "
+                      >
+                        <p className="mb-1 font-medium text-gray-900">
+                          {month}
+                        </p>
 
-                  {/* Rótulo Inferior (Mês) */}
-                  <span className={cn(
-                    "text-[10px] font-semibold text-muted-foreground capitalize tracking-tight transition-colors",
-                    isLast && "text-primary font-bold"
-                  )}>
-                    {month.substring(0, 3)} {/* Exibe apenas a abreviação limpa */}
-                  </span>
-                </div>
-              )
-            })}
+                        <div className="flex items-center justify-between gap-4">
+                          <span className="text-gray-500">
+                            Consultas
+                          </span>
+
+                          <span className="font-medium text-gray-900">
+                            {count}
+                          </span>
+                        </div>
+
+                        <div className="flex items-center justify-between gap-4">
+                          <span className="text-gray-500">
+                            Faturamento
+                          </span>
+
+                          <span className="font-medium text-emerald-600">
+                            {formatCurrency(revenue / 100)}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* BARRA */}
+                      <div className="flex h-32 w-full items-end">
+                        {count > 0 && (
+                          <div
+                            className={cn(
+                              "w-full rounded-t-md transition-all duration-300",
+                              isLast
+                                ? "bg-emerald-500"
+                                : "bg-emerald-100 group-hover:bg-emerald-200"
+                            )}
+                            style={{
+                              height: `${Math.max(
+                                heightPct,
+                                6
+                              )}%`,
+                            }}
+                          />
+                        )}
+                      </div>
+
+                      {/* MÊS */}
+                      <span
+                        className={cn(
+                          "mt-3 text-[11px] capitalize text-gray-400",
+                          isLast &&
+                            "font-medium text-emerald-600"
+                        )}
+                      >
+                        {formatMonth(month)}
+                      </span>
+                    </div>
+                  )
+                }
+              )}
+            </div>
           </div>
         )}
       </CardContent>
     </Card>
   )
+}
+
+function formatMonth(month: string) {
+  const normalized = month
+    .trim()
+    .toLowerCase()
+
+  const months: Record<string, string> = {
+    janeiro: "jan",
+    fevereiro: "fev",
+    março: "mar",
+    abril: "abr",
+    maio: "mai",
+    junho: "jun",
+    julho: "jul",
+    agosto: "ago",
+    setembro: "set",
+    outubro: "out",
+    novembro: "nov",
+    dezembro: "dez",
+  }
+
+  return months[normalized] ?? month.substring(0, 3)
 }

@@ -1,33 +1,76 @@
 "use client"
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect } from "react"
 import Image from "next/image"
-import imgTest from '../../../../../../public/foto1.png'
-import { MapPin, User, Phone, Mail, CalendarDays, Clock, Loader2, Calendar } from "lucide-react"
+
+import {
+  MapPin,
+  User,
+  Phone,
+  Mail,
+  CalendarDays,
+  Clock,
+  Loader2,
+  Calendar,
+} from "lucide-react"
+
 import { Prisma } from "@prisma/client"
-import { useAppointmentForm, AppointmentFormData } from './schedule-form'
-import { useWatch } from 'react-hook-form'
-import { Button } from '@/components/ui/button'
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
-import { Input } from '@/components/ui/input'
-import { formatPhone } from '@/utils/formatPhone'
-import { Calendar as CalendarComponent } from '@/components/ui/calendar'
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { format } from 'date-fns'
-import { ptBR } from 'date-fns/locale'
-import { cn } from '@/lib/utils'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { ScheduleTimeList } from './schedule-time-list'
-import { createNewAppointment } from '../_actions/create-appointment'
-import { toast } from 'sonner'
-import { Card, CardContent } from '@/components/ui/card'
-import { Separator } from '@/components/ui/separator'
-import { Turnstile } from '@marsidev/react-turnstile'
+import { useWatch } from "react-hook-form"
+
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form"
+
+import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent } from "@/components/ui/card"
+import { Separator } from "@/components/ui/separator"
+
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
+
+import { Calendar as CalendarComponent } from "@/components/ui/calendar"
+
+import { Turnstile } from "@marsidev/react-turnstile"
+
+import { format } from "date-fns"
+import { ptBR } from "date-fns/locale"
+
+import { cn } from "@/lib/utils"
+import { formatPhone } from "@/utils/formatPhone"
+
+import {
+  useAppointmentForm,
+  AppointmentFormData,
+} from "./schedule-form"
+
+import { ScheduleTimeList } from "./schedule-time-list"
+import { createNewAppointment } from "../_actions/create-appointment"
+
+import { toast } from "sonner"
+
+import imgTest from "../../../../../../public/foto1.png"
 
 type UserWithServiceAndSubscription = Prisma.UserGetPayload<{
   include: {
-    subscription: true,
-    services: true,
+    subscription: true
+    services: true
   }
 }>
 
@@ -36,70 +79,119 @@ interface ScheduleContentProps {
 }
 
 export interface TimeSlot {
-  time: string;
-  available: boolean;
+  time: string
+  available: boolean
 }
 
 export function ScheduleContent({ clinic }: ScheduleContentProps) {
-  const form = useAppointmentForm();
+  const form = useAppointmentForm()
 
-  const [selectedDate, selectedServiceId, selectedTime, watchedName, watchedEmail, watchedPhone] = useWatch({
+  const [
+    selectedDate,
+    selectedServiceId,
+    selectedTime,
+    watchedName,
+    watchedEmail,
+    watchedPhone,
+  ] = useWatch({
     control: form.control,
-    name: ["date", "serviceId", "time", "name", "email", "phone"],
-  });
+    name: [
+      "date",
+      "serviceId",
+      "time",
+      "name",
+      "email",
+      "phone",
+    ],
+  })
 
-  const isFormFilled = Boolean(selectedDate && selectedServiceId && selectedTime && watchedName && watchedEmail && watchedPhone);
-
-  const [availableTimeSlots, setAvailableTimeSlots] = useState<TimeSlot[]>([]);
-  const [loadingSlots, setLoadingSlots] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [availableTimeSlots, setAvailableTimeSlots] = useState<TimeSlot[]>([])
+  const [loadingSlots, setLoadingSlots] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const [blockedTimes, setBlockedTimes] = useState<string[]>([])
 
-  // Formata a data usando offset local para evitar bug de dia anterior (UTC-3)
   const selectedDateString = selectedDate
-    ? `${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, '0')}-${String(selectedDate.getDate()).padStart(2, '0')}`
-    : null;
+    ? `${selectedDate.getFullYear()}-${String(
+        selectedDate.getMonth() + 1
+      ).padStart(2, "0")}-${String(
+        selectedDate.getDate()
+      ).padStart(2, "0")}`
+    : null
+
+  const selectedService = clinic.services.find(
+    (service) => service.id === selectedServiceId
+  )
+
+  const isFormFilled = Boolean(
+    selectedDate &&
+      selectedServiceId &&
+      selectedTime &&
+      watchedName &&
+      watchedEmail &&
+      watchedPhone
+  )
 
   useEffect(() => {
-    if (!selectedDateString) return;
+    if (!selectedDateString) {
+      setAvailableTimeSlots([])
+      return
+    }
 
-    let cancelled = false;
-    setLoadingSlots(true);
+    let cancelled = false
 
-    fetch(`${process.env.NEXT_PUBLIC_URL}/api/schedule/get-appointments?userId=${clinic.id}&date=${selectedDateString}`)
-      .then((r) => r.json())
+    setLoadingSlots(true)
+
+    fetch(
+      `${process.env.NEXT_PUBLIC_URL}/api/schedule/get-appointments?userId=${clinic.id}&date=${selectedDateString}`
+    )
+      .then((response) => response.json())
       .then((blocked: string[]) => {
-        if (cancelled) return;
+        if (cancelled) return
 
-        const safeBlocked = Array.isArray(blocked) ? blocked : [];
-        setBlockedTimes(safeBlocked);
+        const safeBlocked = Array.isArray(blocked)
+          ? blocked
+          : []
 
-        const finalSlots = (clinic.times || []).map((time) => ({
-          time,
-          available: !safeBlocked.includes(time),
-        }));
-        setAvailableTimeSlots(finalSlots);
+        setBlockedTimes(safeBlocked)
 
-        form.setValue("time", "");
-        form.clearErrors("time");
+        setAvailableTimeSlots(
+          (clinic.times || []).map((time) => ({
+            time,
+            available: !safeBlocked.includes(time),
+          }))
+        )
+
+        form.setValue("time", "")
+        form.clearErrors("time")
       })
       .catch(() => {
-        if (!cancelled) {
-          setBlockedTimes([]);
-          setAvailableTimeSlots((clinic.times || []).map((time) => ({ time, available: true })));
-        }
+        if (cancelled) return
+
+        setBlockedTimes([])
+
+        setAvailableTimeSlots(
+          (clinic.times || []).map((time) => ({
+            time,
+            available: true,
+          }))
+        )
       })
       .finally(() => {
-        if (!cancelled) setLoadingSlots(false);
-      });
+        if (!cancelled) {
+          setLoadingSlots(false)
+        }
+      })
 
-    return () => { cancelled = true; };
-    // clinic.id and clinic.times are stable server props — safe to omit
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedDateString])
+    return () => {
+      cancelled = true
+    }
+  }, [selectedDateString, clinic.id, clinic.times, form])
 
-  async function handleRegisterAppointmnent(formData: AppointmentFormData) {
+  async function handleRegisterAppointment(
+    formData: AppointmentFormData
+  ) {
     setIsSubmitting(true)
+
     const response = await createNewAppointment({
       name: formData.name,
       email: formData.email,
@@ -114,64 +206,90 @@ export function ScheduleContent({ clinic }: ScheduleContentProps) {
     if (response.error) {
       toast.error(response.error)
       setIsSubmitting(false)
-      return;
+      return
     }
 
     toast.success("Consulta agendada com sucesso!")
-    form.reset();
+
+    form.reset()
     setIsSubmitting(false)
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50/50 pb-12">
-      <div className="h-48 md:h-56 bg-linear-to-br from-emerald-600 via-emerald-500 to-teal-500 relative overflow-hidden">
-        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-10 mix-blend-overlay"></div>
-      </div>
+    <main className="min-h-screen bg-muted/30 pb-12">
+      {/* Header / identificação da clínica */}
+      <div className="h-28 md:h-36 bg-linear-to-r from-emerald-600 to-emerald-500" />
 
-      <section className="container max-w-3xl mx-auto px-4 -mt-20 md:-mt-28 relative z-10">
+      <section className="relative mx-auto w-full max-w-3xl px-4 -mt-14 md:-mt-16">
 
-        {/* Clinic Info Card */}
-        <Card className="border-none shadow-lg overflow-visible mb-6 bg-white/95 backdrop-blur-sm">
-          <CardContent className="pt-0 flex flex-col items-center">
-            <div className="relative w-28 h-28 md:w-32 md:h-32 rounded-full overflow-hidden border-4 border-white shadow-md -mt-14 mb-4 bg-white">
+        {/* Clínica */}
+        <Card className="border-border/50 shadow-sm bg-card">
+          <CardContent className="flex flex-col items-center px-5 py-5 md:py-6">
+
+            <div className="relative w-24 h-24 md:w-28 md:h-28 -mt-14 md:-mt-16 mb-4 rounded-full overflow-hidden border-4 border-card bg-muted shadow-sm">
               <Image
                 src={
                   typeof clinic.image === "string"
                     ? clinic.image
-                      .replace(/=s\d+-c/, "=s600-c")
-                      .replace("/upload/", "/upload/w_500,h_500,c_fill,q_100/")
+                        .replace(/=s\d+-c/, "=s600-c")
+                        .replace(
+                          "/upload/",
+                          "/upload/w_500,h_500,c_fill,q_100/"
+                        )
                     : imgTest
                 }
-                alt="Foto da clinica"
-                className="object-cover"
+                alt={`Foto da ${clinic.name}`}
                 fill
                 priority
+                className="object-cover"
               />
             </div>
 
-            <h1 className="text-2xl md:text-3xl font-extrabold text-gray-900 mb-1.5 text-center tracking-tight">
+            <h1 className="text-xl md:text-2xl font-semibold tracking-tight text-foreground text-center">
               {clinic.name}
             </h1>
-            <div className="flex items-center gap-1.5 text-gray-500 bg-gray-100/80 px-3 py-1 rounded-full text-sm">
-              <MapPin className="w-4 h-4 text-emerald-500" />
-              <span className="font-medium">
-                {clinic.address ? clinic.address : "Endereço não informado"}
+
+            <div className="flex items-center gap-1.5 mt-2 text-sm text-muted-foreground text-center">
+              <MapPin className="w-4 h-4 shrink-0 text-emerald-500" />
+
+              <span className="line-clamp-2">
+                {clinic.address || "Endereço não informado"}
               </span>
             </div>
+
           </CardContent>
         </Card>
 
-        {/* Form Card */}
-        <Card className="border-border/50 shadow-sm bg-white overflow-hidden">
+        {/* Agendamento */}
+        <Card className="mt-4 border-border/50 shadow-sm">
           {clinic.status ? (
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(handleRegisterAppointmnent)} className="p-6 md:p-8 space-y-8">
+              <form
+                onSubmit={form.handleSubmit(
+                  handleRegisterAppointment
+                )}
+                className="p-5 md:p-7"
+              >
 
-                {/* 1. Dados Pessoais */}
-                <div>
-                  <div className="flex items-center gap-2 mb-4 text-emerald-600">
-                    <User className="w-5 h-5" />
-                    <h2 className="text-lg font-bold text-gray-900">Seus dados</h2>
+                {/* Dados pessoais */}
+                <section className="space-y-4">
+
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-emerald-500/10">
+                        <User className="w-4 h-4 text-emerald-600" />
+                      </div>
+
+                      <div>
+                        <h2 className="text-sm font-semibold text-foreground">
+                          Seus dados
+                        </h2>
+
+                        <p className="text-xs text-muted-foreground">
+                          Informe seus dados para confirmar a consulta.
+                        </p>
+                      </div>
+                    </div>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -180,12 +298,12 @@ export function ScheduleContent({ clinic }: ScheduleContentProps) {
                       name="name"
                       render={({ field }) => (
                         <FormItem className="md:col-span-2">
-                          <FormLabel className="text-sm font-semibold text-gray-700">Nome completo</FormLabel>
+                          <FormLabel>Nome completo</FormLabel>
                           <FormControl>
                             <Input
-                              placeholder="Como devemos lhe chamar?"
-                              className="h-11 bg-gray-50/50"
                               {...field}
+                              placeholder="Seu nome completo"
+                              className="h-11"
                             />
                           </FormControl>
                           <FormMessage />
@@ -198,16 +316,21 @@ export function ScheduleContent({ clinic }: ScheduleContentProps) {
                       name="phone"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-sm font-semibold text-gray-700">Telefone (WhatsApp)</FormLabel>
+                          <FormLabel>Telefone</FormLabel>
                           <FormControl>
                             <div className="relative">
-                              <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                              <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+
                               <Input
                                 {...field}
-                                placeholder="(XX) XXXXX-XXXX"
-                                className="h-11 pl-9 bg-gray-50/50"
+                                placeholder="(00) 00000-0000"
+                                className="h-11 pl-9"
                                 onChange={(e) => {
-                                  field.onChange(formatPhone(e.target.value))
+                                  field.onChange(
+                                    formatPhone(
+                                      e.target.value
+                                    )
+                                  )
                                 }}
                               />
                             </div>
@@ -222,14 +345,16 @@ export function ScheduleContent({ clinic }: ScheduleContentProps) {
                       name="email"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-sm font-semibold text-gray-700">Email</FormLabel>
+                          <FormLabel>E-mail</FormLabel>
+
                           <FormControl>
                             <div className="relative">
-                              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+
                               <Input
-                                placeholder="seu@email.com"
-                                className="h-11 pl-9 bg-gray-50/50"
                                 {...field}
+                                placeholder="seu@email.com"
+                                className="h-11 pl-9"
                               />
                             </div>
                           </FormControl>
@@ -238,173 +363,324 @@ export function ScheduleContent({ clinic }: ScheduleContentProps) {
                       )}
                     />
                   </div>
-                </div>
+                </section>
 
-                <Separator className="bg-gray-100" />
+                <Separator className="my-7" />
 
-                {/* 2. Dados da Consulta */}
-                <div>
-                  <div className="flex items-center gap-2 mb-1 text-emerald-600">
-                    <CalendarDays className="w-5 h-5" />
-                    <h2 className="text-lg font-bold text-gray-900">A consulta</h2>
+                {/* Consulta */}
+                <section className="space-y-5">
+
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-emerald-500/10">
+                        <CalendarDays className="w-4 h-4 text-emerald-600" />
+                      </div>
+
+                      <div>
+                        <h2 className="text-sm font-semibold text-foreground">
+                          Agendamento
+                        </h2>
+
+                        <p className="text-xs text-muted-foreground">
+                          Escolha o procedimento, dia e horário.
+                        </p>
+                      </div>
+                    </div>
                   </div>
 
-                  <div className="space-y-5">
-                    <FormField
-                      control={form.control}
-                      name="serviceId"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-sm font-semibold text-gray-700">Selecione o serviço</FormLabel>
-                          <FormControl>
-                            <Select onValueChange={(value) => {
+                  {/* Serviço */}
+                  <FormField
+                    control={form.control}
+                    name="serviceId"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Procedimento</FormLabel>
+                        <FormControl>
+                          <Select
+                            value={field.value}
+                            onValueChange={(value) => {
                               field.onChange(value)
                               form.setValue("time", "")
                               form.clearErrors("time")
-                            }}>
-                              <SelectTrigger className="h-12 bg-gray-50/50 border-gray-200">
-                                <SelectValue placeholder="Qual procedimento você deseja realizar?" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {clinic.services.map((service) => (
-                                  <SelectItem key={service.id} value={service.id} className="py-2.5 cursor-pointer">
-                                    <div className="flex items-center justify-between w-full">
-                                      <span className="font-medium text-gray-700">{service.name}</span>
-                                    </div>
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                            }}
+                          >
+                            <SelectTrigger className="h-11">
+                              <SelectValue placeholder="Selecione o procedimento" />
+                            </SelectTrigger>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5 pt-2">
-                      <FormField
-                        control={form.control}
-                        name="date"
-                        render={({ field }) => (
-                          <FormItem className="flex flex-col">
-                            <FormLabel className="text-sm font-semibold text-gray-700">Qual o melhor dia?</FormLabel>
-                            <Popover>
-                              <PopoverTrigger
-                                className={cn(
-                                  "flex w-full items-center justify-start rounded-md border border-gray-200 bg-gray-50/50 px-3 h-11 text-sm font-normal shadow-sm transition-colors hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50",
-                                  !field.value && "text-muted-foreground"
-                                )}
-                              >
-                                {field.value ? (
-                                  format(field.value, "EEEE, dd 'de' MMMM 'de' yyyy", { locale: ptBR })
-                                    .replace(/^[a-z]/, (match) => match.toUpperCase())
-                                    .replace(/de ([a-z])/, (_, letter) => `de ${letter.toUpperCase()}`)
-                                ) : (
-                                  <span>Escolha uma data</span>
-                                )}
-                                <Calendar className="ml-auto h-4 w-4 opacity-50 text-emerald-600" />
-                              </PopoverTrigger>
-                              <PopoverContent className="w-auto p-0" align="start">
-                                <CalendarComponent
-                                  mode="single"
-                                  selected={field.value}
-                                  onSelect={(date) => {
-                                    if (date) {
-                                      field.onChange(date)
-                                      form.setValue("time", "")
-                                      form.clearErrors("time")
-                                    }
-                                  }}
-                                  disabled={(date) =>
-                                    date < new Date(new Date().setHours(0, 0, 0, 0))
-                                  }
-                                  locale={ptBR}
-                                />
-                              </PopoverContent>
-                            </Popover>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
+                            <SelectContent>
+                              {clinic.services.map((service) => (
+                                <SelectItem
+                                  key={service.id}
+                                  value={service.id}
+                                  className="py-3"
+                                >
+                                  <div className="flex items-center justify-between gap-6">
+                                    <span>
+                                      {service.name}
+                                    </span>
 
-                      <FormField
-                        control={form.control}
-                        name="time"
-                        render={({ field }) => (
-                          <FormItem className="flex flex-col">
-                            <FormLabel className="text-sm font-semibold text-gray-700">E o horário?</FormLabel>
-                            {loadingSlots ? (
-                              <div className="flex w-full items-center justify-start rounded-md border border-gray-200 bg-gray-50/50 px-3 h-11 text-sm text-emerald-600 gap-2 opacity-70">
-                                <Loader2 className="w-4 h-4 animate-spin" />
-                                <span className="font-medium">Buscando...</span>
-                              </div>
-                            ) : availableTimeSlots.length === 0 ? (
-                              <div className="flex w-full items-center justify-start rounded-md border border-gray-200 bg-gray-50/50 px-3 h-11 text-sm text-gray-400">
-                                Selecione uma data...
-                              </div>
-                            ) : (
-                              <ScheduleTimeList
-                                onSelectTime={(time) => field.onChange(time)}
-                                clinicTimes={clinic.times}
-                                blockedTimes={blockedTimes}
-                                availableTimeSlots={availableTimeSlots}
-                                selectedTime={field.value}
-                                selectedDate={selectedDate}
-                                requiredSlots={
-                                  clinic.services.find(s => s.id === selectedServiceId) ? Math.ceil(clinic.services.find(s => s.id === selectedServiceId)!.duration / 30) : 1
-                                }
-                              />
+                                    <span className="text-xs text-muted-foreground">
+                                      {Math.floor(
+                                        service.duration / 60
+                                      ) > 0
+                                        ? `${Math.floor(
+                                            service.duration / 60
+                                          )}h${
+                                            service.duration % 60
+                                              ? ` ${service.duration % 60}min`
+                                              : ""
+                                          }`
+                                        : `${service.duration}min`}
+                                    </span>
+                                  </div>
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  {/* Data */}
+                  <FormField
+                    control={form.control}
+                    name="date"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Data</FormLabel>
+
+                        <Popover>
+                          <PopoverTrigger
+                            className={cn(
+                              "flex w-full items-center rounded-md border bg-background px-3 h-11 text-sm transition-colors",
+                              "hover:bg-muted/50",
+                              !field.value &&
+                                "text-muted-foreground"
                             )}
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-                  </div>
-                </div>
+                          >
+                            <Calendar className="mr-2 h-4 w-4 text-emerald-600" />
 
-                {/* Footer Submit */}
-                <div className="pt-1">
-                  <div className="pt-1 flex justify-center">
+                            <span className="truncate">
+                              {field.value
+                                ? format(
+                                    field.value,
+                                    "EEEE, dd 'de' MMMM",
+                                    {
+                                      locale: ptBR,
+                                    }
+                                  )
+                                : "Escolha uma data"}
+                            </span>
+                          </PopoverTrigger>
+
+                          <PopoverContent
+                            className="w-auto p-0"
+                            align="start"
+                          >
+                            <CalendarComponent
+                              mode="single"
+                              selected={field.value}
+                              onSelect={(date) => {
+                                if (!date) return
+
+                                field.onChange(date)
+                                form.setValue("time", "")
+                                form.clearErrors("time")
+                              }}
+                              disabled={(date) =>
+                                date <
+                                new Date(
+                                  new Date().setHours(
+                                    0,
+                                    0,
+                                    0,
+                                    0
+                                  )
+                                )
+                              }
+                              locale={ptBR}
+                            />
+                          </PopoverContent>
+                        </Popover>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  {/* Horário */}
+                  <FormField
+                    control={form.control}
+                    name="time"
+                    render={({ field }) => (
+                      <FormItem>
+                        <div className="flex items-center justify-between">
+                          <FormLabel>Horário</FormLabel>
+
+                          {selectedDate && !loadingSlots && (
+                            <span className="text-xs text-muted-foreground">
+                              {selectedDate &&
+                                format(
+                                  selectedDate,
+                                  "dd/MM",
+                                  { locale: ptBR }
+                                )}
+                            </span>
+                          )}
+                        </div>
+
+                        {!selectedDate ? (
+                          <div className="flex items-center gap-2 h-11 rounded-md border border-dashed px-3 text-sm text-muted-foreground">
+                            <Calendar className="w-4 h-4" />
+                            Selecione uma data primeiro.
+                          </div>
+                        ) : loadingSlots ? (
+                          <div className="flex items-center gap-2 h-11 rounded-md border px-3 text-sm text-muted-foreground">
+                            <Loader2 className="w-4 h-4 animate-spin text-emerald-500" />
+                            Verificando horários disponíveis...
+                          </div>
+                        ) : availableTimeSlots.length === 0 ? (
+                          <div className="flex items-center gap-2 h-11 rounded-md border border-dashed px-3 text-sm text-muted-foreground">
+                            <Clock className="w-4 h-4" />
+                            Nenhum horário disponível.
+                          </div>
+                        ) : (
+                          <ScheduleTimeList
+                            onSelectTime={(time) =>
+                              field.onChange(time)
+                            }
+                            clinicTimes={clinic.times}
+                            blockedTimes={blockedTimes}
+                            availableTimeSlots={
+                              availableTimeSlots
+                            }
+                            selectedTime={field.value}
+                            selectedDate={selectedDate}
+                            requiredSlots={
+                              selectedService
+                                ? Math.ceil(
+                                    selectedService.duration /
+                                      30
+                                  )
+                                : 1
+                            }
+                          />
+                        )}
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  {/* Resumo */}
+                  {selectedService &&
+                    selectedDate &&
+                    selectedTime && (
+                      <div className="rounded-lg border bg-muted/30 p-3.5">
+                        <p className="text-xs font-medium text-muted-foreground mb-1">
+                          Resumo do agendamento
+                        </p>
+
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
+                          <span className="text-sm font-medium">
+                            {selectedService.name}
+                          </span>
+
+                          <span className="text-sm text-muted-foreground">
+                            {format(
+                              selectedDate,
+                              "dd/MM/yyyy"
+                            )}{" "}
+                            às {selectedTime}
+                          </span>
+                        </div>
+                      </div>
+                    )}
+                </section>
+
+                <Separator className="my-7" />
+
+                {/* Confirmação */}
+                <div className="space-y-4">
+                  <div className="flex justify-center">
                     <Turnstile
-                      siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY!}
-                      onSuccess={(token) => form.setValue("turnstileToken", token)}
-                      onError={() => form.setValue("turnstileToken", "")}
-                      onExpire={() => form.setValue("turnstileToken", "")}
+                      siteKey={
+                        process.env
+                          .NEXT_PUBLIC_TURNSTILE_SITE_KEY!
+                      }
+                      onSuccess={(token) =>
+                        form.setValue(
+                          "turnstileToken",
+                          token
+                        )
+                      }
+                      onError={() =>
+                        form.setValue(
+                          "turnstileToken",
+                          ""
+                        )
+                      }
+                      onExpire={() =>
+                        form.setValue(
+                          "turnstileToken",
+                          ""
+                        )
+                      }
                     />
                   </div>
+
                   <Button
                     type="submit"
-                    className="w-full h-12 text-base font-bold tracking-wide shadow-sm hover:shadow transition-all bg-emerald-600 hover:bg-emerald-500 text-white border-0"
-                    disabled={isSubmitting || !isFormFilled}
+                    disabled={
+                      isSubmitting || !isFormFilled
+                    }
+                    className={cn(
+                      "w-full h-11 font-semibold",
+                      "bg-emerald-600 hover:bg-emerald-500",
+                      "shadow-sm transition-all"
+                    )}
                   >
                     {isSubmitting ? (
                       <>
-                        <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                        Agendando...
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Confirmando agendamento...
                       </>
                     ) : (
-                      "Confirmar Agendamento"
+                      "Confirmar agendamento"
                     )}
                   </Button>
-                </div>
 
+                  <p className="text-center text-[11px] text-muted-foreground">
+                    Ao confirmar, sua consulta será registrada
+                    com a clínica.
+                  </p>
+                </div>
               </form>
             </Form>
           ) : (
-            <div className="flex flex-col items-center justify-center p-12 text-center">
-              <div className="w-16 h-16 bg-rose-100 text-rose-500 rounded-full flex items-center justify-center mb-4">
-                <Clock className="w-8 h-8" />
+            /* Clínica fechada */
+            <div className="flex flex-col items-center text-center px-6 py-14">
+              <div className="flex items-center justify-center w-12 h-12 rounded-full bg-muted mb-4">
+                <Clock className="w-5 h-5 text-muted-foreground" />
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-2">Clínica Fechada</h3>
-              <p className="text-gray-500 max-w-sm">
-                Infelizmente a clínica não está aceitando novos agendamentos online no momento. Por favor, tente novamente mais tarde.
+
+              <h2 className="text-base font-semibold text-foreground">
+                Agendamentos indisponíveis
+              </h2>
+
+              <p className="mt-1.5 max-w-sm text-sm leading-relaxed text-muted-foreground">
+                Esta clínica não está aceitando agendamentos
+                online no momento. Tente novamente mais tarde.
               </p>
             </div>
           )}
         </Card>
 
+        <p className="text-center text-xs text-muted-foreground mt-6">
+          Agendamento online
+        </p>
       </section>
-    </div>
+    </main>
   )
 }

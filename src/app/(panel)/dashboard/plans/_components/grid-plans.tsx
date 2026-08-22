@@ -5,73 +5,104 @@ import {
   CardTitle,
   CardDescription,
   CardFooter,
-} from '@/components/ui/card'
-import { subscriptionPlans } from '@/utils/plans/index'
-import { SubscriptionButton } from './subscription-button'
-import { Check, Sparkles } from 'lucide-react'
-import { cn } from '@/lib/utils'
+} from "@/components/ui/card"
+import { subscriptionPlans } from "@/utils/plans/index"
+import { SubscriptionButton } from "./subscription-button"
+import { Check, Sparkles } from "lucide-react"
+import { cn } from "@/lib/utils"
 
 export function GridPlans() {
   return (
-    <section className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8 max-w-6xl mx-auto py-8 px-4">
+    <section className="mx-auto grid w-full max-w-5xl grid-cols-1 gap-5 px-4 py-8 md:grid-cols-3">
       {subscriptionPlans.map((plan) => {
-        const isPro = plan.id === "PROFESSIONAL";
+        const isPro = plan.id === "PROFESSIONAL"
         return (
           <Card
             key={plan.id}
             className={cn(
-              "relative flex flex-col w-full h-full border-border/50 transition-all duration-300 hover:shadow-lg bg-card",
-              isPro && "border-emerald-500 shadow-md shadow-emerald-500/10 scale-100 lg:scale-105 z-10"
+              "relative flex h-full flex-col border-gray-200 bg-white shadow-sm transition-shadow duration-200 hover:shadow-md",
+              isPro && "border-emerald-300"
             )}
           >
             {isPro && (
-              <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-                <span className="flex items-center gap-1.5 bg-emerald-500 text-white text-[11px] font-bold uppercase tracking-wider py-1 px-3.5 rounded-full shadow-sm">
-                  <Sparkles className="w-3.5 h-3.5" />
-                  MAIS POPULAR
+              <div className="absolute right-4 top-4">
+                <span className="flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-emerald-700">
+                  <Sparkles className="h-3 w-3" />
+                  Popular
                 </span>
               </div>
             )}
 
-            <CardHeader className="text-center pb-4 pt-8">
-              <CardTitle className="text-2xl font-bold text-foreground">
+            <CardHeader className="pb-5 pt-6">
+              <CardTitle className="text-xl font-semibold text-gray-900">
                 {plan.name}
               </CardTitle>
-              <CardDescription className="text-sm mt-2">
+
+              <CardDescription className="mt-1.5 min-h-10 text-sm leading-relaxed">
                 {plan.description}
               </CardDescription>
             </CardHeader>
 
-            <CardContent className="flex-1 px-6 pb-6 space-y-6">
-              <div className="flex flex-col items-center">
-                <div className="flex items-baseline gap-1 text-muted-foreground line-through text-sm h-5">
-                  {plan.oldPrice}
+            <CardContent className="flex-1 space-y-6">
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-gray-400 line-through">
+                    {plan.oldPrice}
+                  </span>
                 </div>
-                <div className="flex items-baseline gap-1 mt-1">
-                  <span className="text-4xl font-extrabold text-foreground tracking-tight">{plan.price}</span>
-                  <span className="text-sm font-medium text-muted-foreground">/mês</span>
+
+                <div className="mt-1 flex items-baseline gap-1">
+                  <span
+                    className={cn(
+                      "text-3xl font-bold tracking-tight",
+                      isPro
+                        ? "text-emerald-600"
+                        : "text-gray-900"
+                    )}
+                  >
+                    {plan.price}
+                  </span>
+
+                  <span className="text-sm text-gray-400">
+                    /mês
+                  </span>
                 </div>
               </div>
 
-              <div className="space-y-3.5 pt-6 border-t border-border/40">
-                {plan.features.map((feature, idx) => (
-                  <div key={idx} className="flex items-start gap-3">
-                    <div className={cn(
-                      "shrink-0 w-5 h-5 rounded-full flex items-center justify-center mt-0.5",
-                      isPro ? "bg-emerald-100 text-emerald-600" : "bg-primary/10 text-primary"
-                    )}>
-                      <Check className="w-3.5 h-3.5 stroke-3" />
+              <div className="border-t border-gray-100 pt-5">
+                <p className="mb-3 text-xs font-medium uppercase tracking-wide text-gray-400">
+                  Incluído no plano
+                </p>
+
+                <div className="space-y-3">
+                  {plan.features.map((feature, idx) => (
+                    <div
+                      key={idx}
+                      className="flex items-start gap-2.5"
+                    >
+                      <Check
+                        className={cn(
+                          "mt-0.5 h-4 w-4 shrink-0",
+                          isPro
+                            ? "text-emerald-500"
+                            : "text-gray-400"
+                        )}
+                      />
+
+                      <span className="text-sm leading-relaxed text-gray-600">
+                        {feature}
+                      </span>
                     </div>
-                    <span className="text-sm font-medium text-foreground/80 leading-tight">
-                      {feature}
-                    </span>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
             </CardContent>
 
-            <CardFooter className="px-6 pb-8 pt-0 mt-auto">
-              <SubscriptionButton type={plan.id as any} isPro={isPro} />
+            <CardFooter className="pt-2">
+              <SubscriptionButton
+                type={plan.id as any}
+                isPro={isPro}
+              />
             </CardFooter>
           </Card>
         )
