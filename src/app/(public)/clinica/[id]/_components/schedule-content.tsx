@@ -415,25 +415,9 @@ export function ScheduleContent({ clinic }: ScheduleContentProps) {
                                   value={service.id}
                                   className="py-3"
                                 >
-                                  <div className="flex items-center justify-between gap-6">
-                                    <span>
-                                      {service.name}
-                                    </span>
-
-                                    <span className="text-xs text-muted-foreground">
-                                      {Math.floor(
-                                        service.duration / 60
-                                      ) > 0
-                                        ? `${Math.floor(
-                                            service.duration / 60
-                                          )}h${
-                                            service.duration % 60
-                                              ? ` ${service.duration % 60}min`
-                                              : ""
-                                          }`
-                                        : `${service.duration}min`}
-                                    </span>
-                                  </div>
+                                  <span>
+                                    {service.name}
+                                  </span>
                                 </SelectItem>
                               ))}
                             </SelectContent>

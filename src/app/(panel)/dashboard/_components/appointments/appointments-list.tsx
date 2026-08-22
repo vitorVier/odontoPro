@@ -224,7 +224,7 @@ export function AppointmentsList({ times, clinicId, clinicTimes, services }: App
                     return (
                       <div
                         key={slot}
-                        className='flex items-center py-2.5 px-3 rounded-xl border border-transparent hover:border-dashed hover:border-border/60 hover:bg-muted/30 transition-all group'
+                        className='flex items-center py-2.5 px-3 rounded-xl border border-transparent hover:border-dashed hover:border-border/40 hover:bg-muted/30 transition-all group'
                       >
                         <div className='w-16 text-xs font-bold text-muted-foreground/50 group-hover:text-primary transition-colors ml-1'>
                           {slot}

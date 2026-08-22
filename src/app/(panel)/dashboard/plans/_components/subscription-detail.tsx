@@ -92,7 +92,7 @@ export function SubscriptionDetail({ subscription }: SubscriptionDetailProps) {
         </CardHeader>
 
         <CardContent className="space-y-6">
-          <div className="rounded-xl border border-border/60 bg-muted/20 p-5 md:p-6">
+          <div className="rounded-xl border border-border/40 bg-muted/20 p-5 md:p-6">
             <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-4">
               Benefícios Incluídos
             </h4>

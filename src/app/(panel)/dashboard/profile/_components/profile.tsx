@@ -78,7 +78,6 @@ export function ProfileContent({ user }: ProfileContentProps) {
     }
 
     return hours;
-
   }
   
   const hours = generateTimeSlots();
@@ -105,7 +104,8 @@ export function ProfileContent({ user }: ProfileContentProps) {
       status: values.status === 'active' ? true : false,
       phone: values.phone,
       timeZone: values.timeZone,
-      times: selectedHours || []
+      times: selectedHours || [],
+      weekDays: values.weekDays,
     })
 
     if (response.error) {
@@ -523,7 +523,7 @@ export function ProfileContent({ user }: ProfileContentProps) {
           </CardContent>
         </Card>
 
-        <div className="flex flex-col gap-3 sm:flex-row sm:justify-end">
+        <div className="flex flex-col gap-3 mb-6 sm:flex-row sm:justify-end">
           <Button
             type="submit"
             disabled={form.formState.isSubmitting}

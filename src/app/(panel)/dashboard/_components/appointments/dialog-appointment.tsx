@@ -66,7 +66,7 @@ export function DialogAppointment({ appointment }: DialogAppointmentProps) {
         {/* Informações do Paciente */}
         <div className="space-y-2.5">
           <h4 className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider pl-1">Paciente</h4>
-          <div className="flex flex-col gap-0.5 rounded-xl border border-border/60 bg-card overflow-hidden shadow-sm">
+          <div className="flex flex-col gap-0.5 rounded-xl border border-border/40 bg-card overflow-hidden shadow-sm">
             <div className="flex items-center gap-3 p-3 border-b border-border/40">
               <div className="p-2 bg-muted/50 rounded-lg">
                 <User className="w-4 h-4 text-foreground/70" />
@@ -93,7 +93,7 @@ export function DialogAppointment({ appointment }: DialogAppointmentProps) {
         {/* Serviço */}
         <div className="space-y-2.5">
           <h4 className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider pl-1">Serviço</h4>
-          <div className="flex items-center justify-between p-3 rounded-xl border border-border/60 bg-card shadow-sm">
+          <div className="flex items-center justify-between p-3 rounded-xl border border-border/40 bg-card shadow-sm">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-emerald-100 text-emerald-700 rounded-lg">
                 <Stethoscope className="w-4 h-4" />

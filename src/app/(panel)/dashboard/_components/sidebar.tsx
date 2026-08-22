@@ -30,6 +30,9 @@ import {
   Menu,
   Stethoscope,
   BarChart3,
+  Calendar,
+  LayoutDashboard,
+  Calendar1,
 } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { getPermissionUserToReports } from "../reports/_data-access/get-permission-reprots";
@@ -63,8 +66,14 @@ export function SidebarDashboard({ children }: { children: React.ReactNode }) {
   const NAVIGATION_ITEMS: NavigationItem[] = [
     {
       href: "/dashboard",
-      label: "Agendamentos",
-      icon: CalendarCheck2,
+      label: "Dashboard",
+      icon: LayoutDashboard,
+      category: "Painel",
+    },
+    {
+      href: "/dashboard/agenda",
+      label: "Agenda",
+      icon: Calendar,
       category: "Painel",
     },
     {

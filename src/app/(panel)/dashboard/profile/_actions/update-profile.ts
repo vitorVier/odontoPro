@@ -12,6 +12,7 @@ const formSchema = z.object({
   status: z.boolean(),
   timeZone: z.string(),
   times: z.array(z.string()),
+  weekDays: z.array(z.number()).min(1),
 })
 
 type FormSchema = z.infer<typeof formSchema>
