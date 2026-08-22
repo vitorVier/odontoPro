@@ -11,6 +11,7 @@ export const appointmentSchema = z.object({
   date: z.date({ message: "A data é obrigatória" }),
   serviceId: z.string().min(1, "O serviço é obrigatório"),
   time: z.string().min(1, "O horário é obrigatório"),
+  turnstileToken: z.string().min(1, "Verificação de segurança obrigatória"),
 })
 
 export type AppointmentFormData = z.infer<typeof appointmentSchema>
@@ -26,6 +27,7 @@ export function useAppointmentForm() {
       serviceId: "",
       time: "",
       date: new Date(),
+      turnstileToken: "",
     }
   })
 }

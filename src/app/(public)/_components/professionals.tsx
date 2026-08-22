@@ -5,18 +5,43 @@ import {
 import Image from "next/image"
 import fotoImg from '../../../../public/foto1.png'
 import Link from "next/link"
-import { ArrowRight, MapPin, Calendar, Clock } from "lucide-react"
+import { ArrowRight, MapPin, Calendar, Clock, Phone } from "lucide-react"
 import { Prisma } from "@prisma/client"
 import { PremiumCardBadge } from "./premium-badge"
 
-type UserWithSubscription = Prisma.UserGetPayload<{
-  include: {
-    subscription: true,
-  }
-}>
+type UserWithData = Prisma.UserGetPayload<{
+  select: {
+    id: true;
+    name: true;
+    email: true;
+    image: true;
+    address: true;
+    phone: true;
+    times: true;
+
+    subscription: {
+      select: {
+        status: true;
+        plan: true;
+      };
+    };
+
+    services: {
+      where: {
+        status: true;
+      };
+      select: {
+        id: true;
+        name: true;
+        price: true;
+        duration: true;
+      };
+    };
+  };
+}>;
 
 interface ProfessionalsProps {
-  professionals: UserWithSubscription[]
+  professionals: UserWithData[]
 }
 
 export function Professionals({ professionals }: ProfessionalsProps) {
@@ -77,10 +102,10 @@ export function Professionals({ professionals }: ProfessionalsProps) {
 
                 {/* Corpo das Informações */}
                 <div className="p-5 flex flex-col flex-1 justify-between space-y-4">
-                  <div className="space-y-2.5">
+                  <div className="space-y-3">
                     {/* Nome do Estabelecimento */}
                     <h3 className="font-bold text-gray-900 text-base sm:text-lg group-hover:text-emerald-600 transition-colors line-clamp-1">
-                      {clinic.name}
+                      {clinic.name || "Clínica Odontológica"}
                     </h3>
 
                     {/* Dados Reais: Endereço (Buscado dinamicamente se houver no seu model) */}
@@ -88,25 +113,45 @@ export function Professionals({ professionals }: ProfessionalsProps) {
                       <MapPin className="w-4 h-4 shrink-0 text-gray-400" />
                       <span className="text-xs truncate">
                         {/* Altere para o campo correto do seu banco (ex: clinic.address) */}
-                        {clinic.email ? "Centro Médico Odontológico" : "Endereço não informado"}
+                        {clinic.address || "Endereço não informado"}
+                      </span>
+                    </div>
+                    
+                    <div className="flex items-center gap-1.5 text-gray-500">
+                      <Phone className="w-4 h-4 shrink-0 text-gray-400" />
+                      <span className="text-xs truncate">
+                        {/* Altere para o campo correto do seu banco (ex: clinic.address) */}
+                        {clinic.phone || "Telefone não informado"}
                       </span>
                     </div>
 
                     {/* Dados Reais: Horários de Atendimento */}
                     <div className="flex items-center gap-1.5 text-gray-500">
                       <Clock className="w-4 h-4 shrink-0 text-gray-400" />
-                      <span className="text-xs">08:00 às 18:00</span>
+                      <span className="text-xs">
+                        {clinic.times.length > 0
+                          ? `${clinic.times[0]} às ${clinic.times[clinic.times.length - 1]}`
+                          : "Horário não informado"}
+                      </span>
                     </div>
                   </div>
 
                   {/* Especialidades da Clínica */}
                   <div className="flex flex-wrap gap-1 pt-1">
-                    <span className="text-[10px] font-semibold bg-gray-100 text-gray-600 px-2 py-0.5 rounded-md uppercase tracking-wider">
-                      Geral
-                    </span>
-                    <span className="text-[10px] font-semibold bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-md border border-emerald-100/50 uppercase tracking-wider">
-                      Estética
-                    </span>
+                    {clinic.services.slice(0, 2).map((service) => (
+                      <span
+                        key={service.id}
+                        className="text-[10px] font-semibold bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-md border border-emerald-100/50 uppercase tracking-wider"
+                      >
+                        {service.name}
+                      </span>
+                    ))}
+
+                    {clinic.services.length > 2 && (
+                      <span className="text-[10px] font-semibold bg-gray-100 text-gray-500 px-2 py-0.5 rounded-md">
+                        +{clinic.services.length - 2}
+                      </span>
+                    )}
                   </div>
 
                   {/* Botão de Redirecionamento */}
@@ -125,7 +170,6 @@ export function Professionals({ professionals }: ProfessionalsProps) {
             </Card>
           ))}
         </div>
-
       </div>
     </section>
   );

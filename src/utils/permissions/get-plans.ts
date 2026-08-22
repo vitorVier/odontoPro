@@ -11,10 +11,10 @@ const PLANS_LIMITS: PlansProps = {
   BASIC: {
     maxServices: 10,
   },
-  PREMIUM: {
+  PROFESSIONAL: {
     maxServices: 50
   },
-  PROFESSIONAL: {
+  PREMIUM: {
     maxServices: 999
   }
 }

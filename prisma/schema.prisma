@@ -14,6 +14,7 @@ model Appointment {
   appointmentDate DateTime // Data do agendamento
   time            String // horário escolhido
   source          AppointmentSource @default(DENTIST) // quem criou
+  ipAddress       String?
 
   serviceId String // id do serviço agendado
   service   Service @relation(fields: [serviceId], references: [id])
@@ -23,6 +24,9 @@ model Appointment {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@unique([userId, appointmentDate, time])
+  @@index([ipAddress, createdAt])
 }
 
 enum AppointmentSource {

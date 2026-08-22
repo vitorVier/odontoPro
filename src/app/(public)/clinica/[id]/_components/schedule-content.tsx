@@ -22,6 +22,7 @@ import { createNewAppointment } from '../_actions/create-appointment'
 import { toast } from 'sonner'
 import { Card, CardContent } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
+import { Turnstile } from '@marsidev/react-turnstile'
 
 type UserWithServiceAndSubscription = Prisma.UserGetPayload<{
   include: {
@@ -106,7 +107,8 @@ export function ScheduleContent({ clinic }: ScheduleContentProps) {
       time: formData.time,
       date: formData.date,
       serviceId: formData.serviceId,
-      clinicId: clinic.id
+      clinicId: clinic.id,
+      turnstileToken: formData.turnstileToken,
     })
 
     if (response.error) {
@@ -363,6 +365,14 @@ export function ScheduleContent({ clinic }: ScheduleContentProps) {
 
                 {/* Footer Submit */}
                 <div className="pt-1">
+                  <div className="pt-1 flex justify-center">
+                    <Turnstile
+                      siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY!}
+                      onSuccess={(token) => form.setValue("turnstileToken", token)}
+                      onError={() => form.setValue("turnstileToken", "")}
+                      onExpire={() => form.setValue("turnstileToken", "")}
+                    />
+                  </div>
                   <Button
                     type="submit"
                     className="w-full h-12 text-base font-bold tracking-wide shadow-sm hover:shadow transition-all bg-emerald-600 hover:bg-emerald-500 text-white border-0"

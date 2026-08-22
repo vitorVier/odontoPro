@@ -1,8 +1,9 @@
 "use server"
 
 import prisma from "@/lib/prisma"
-import { addDays, isAfter, differenceInDays } from 'date-fns'
+import { addDays, differenceInDays } from 'date-fns'
 import { TRIAL_DAYS } from '@/utils/permissions/trial-limits'
+import { isTrialActive } from "./isTrialActive"
 
 export async function checkSubscription(userId: string) {
   const user = await prisma.user.findFirst({
@@ -13,7 +14,6 @@ export async function checkSubscription(userId: string) {
       subscription: true,
     }
   })
-
 
   if (!user) {
     throw new Error("Usuário nao encontrado")
@@ -27,9 +27,7 @@ export async function checkSubscription(userId: string) {
     }
   }
 
-  const trialEndDate = addDays(user.createdAt, TRIAL_DAYS)
-
-  if (isAfter(new Date(), trialEndDate)) {
+  if (!isTrialActive(user.createdAt)) {
     return {
       subscriptionStatus: "EXPIRED",
       message: "Seu período de teste expirou.",
@@ -37,6 +35,7 @@ export async function checkSubscription(userId: string) {
     }
   }
 
+  const trialEndDate = addDays(user.createdAt, TRIAL_DAYS)
   const daysRemaining = differenceInDays(trialEndDate, new Date())
 
   return {
