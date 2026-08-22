@@ -1,8 +1,7 @@
 "use client"
 
-import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { TimeSlot } from "./schedule-content";
-import { cn } from '@/lib/utils'
 import { isSlotInThePast, isToday, isSlotSequenceAvailable } from './schedule-utils'
 
 interface ScheduleTimeListProps {
@@ -27,40 +26,35 @@ export function ScheduleTimeList({
 
   const dateIsToday = isToday(selectedDate)
 
-
   return (
-    <div className="grid grid-cols-3 md:grid-cols-5 gap-2">
-      {availableTimeSlots.map((slot) => {
+    <Select value={selectedTime || undefined} onValueChange={onSelectTime}>
+      <SelectTrigger className="w-full bg-white h-11 border-gray-200">
+        <SelectValue placeholder="Selecione um horário" />
+      </SelectTrigger>
+      <SelectContent>
+        {availableTimeSlots.map((slot) => {
+          const sequenceOK = isSlotSequenceAvailable(
+            slot.time,
+            requiredSlots,
+            clinicTimes,
+            blockedTimes
+          )
 
-        const sequenceOK = isSlotSequenceAvailable(
-          slot.time,
-          requiredSlots,
-          clinicTimes,
-          blockedTimes
-        )
+          const slotIsPast = dateIsToday && isSlotInThePast(slot.time)
+          const slotEnabled = slot.available && sequenceOK && !slotIsPast;
 
-        const slotIsPast = dateIsToday && isSlotInThePast(slot.time)
-
-        const slotEnabled = slot.available && sequenceOK && !slotIsPast;
-
-
-        return (
-          <Button
-            onClick={() => slotEnabled && onSelectTime(slot.time)}
-            type="button"
-            variant="outline"
-            key={slot.time}
-            className={cn("h-10 select-none",
-              selectedTime === slot.time && "border-2 border-emerald-500 text-primary",
-              !slotEnabled && "opacity-50 cursor-not-allowed"
-            )}
-            disabled={!slotEnabled}
-          >
-            {slot.time}
-          </Button>
-        )
-      })}
-
-    </div>
+          return (
+            <SelectItem 
+              key={slot.time} 
+              value={slot.time}
+              disabled={!slotEnabled}
+              className="py-2.5 cursor-pointer"
+            >
+              {slot.time} {!slotEnabled && <span className="text-gray-400 text-xs ml-2">(Indisponível)</span>}
+            </SelectItem>
+          )
+        })}
+      </SelectContent>
+    </Select>
   )
 }

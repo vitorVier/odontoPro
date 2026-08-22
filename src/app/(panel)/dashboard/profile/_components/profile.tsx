@@ -5,7 +5,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -20,7 +19,6 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
-import Image from 'next/image'
 import {
   Dialog,
   DialogContent,
@@ -33,7 +31,6 @@ import {
 import { Button } from '@/components/ui/button'
 import { ArrowRight } from 'lucide-react'
 
-import imgTest from '../../../../../../public/foto1.png'
 import { cn } from '@/lib/utils'
 import { Prisma } from '@prisma/client'
 import { updateProfile } from '../_actions/update-profile'
@@ -83,7 +80,7 @@ export function ProfileContent({ user }: ProfileContentProps) {
     return hours;
 
   }
-
+  
   const hours = generateTimeSlots();
 
   function toggleHour(hour: string) {
@@ -124,7 +121,6 @@ export function ProfileContent({ user }: ProfileContentProps) {
     await update();
     router.replace("/")
   }
-
 
   return (
     <div className='mx-auto'>
@@ -179,7 +175,6 @@ export function ProfileContent({ user }: ProfileContentProps) {
                   )}
                 />
 
-
                 <FormField
                   control={form.control}
                   name="phone"
@@ -212,7 +207,6 @@ export function ProfileContent({ user }: ProfileContentProps) {
                         Status da clinica
                       </FormLabel>
                       <FormControl>
-
                         <Select
                           onValueChange={field.onChange}
                           defaultValue={field.value ? "active" : "inactive"}
@@ -276,14 +270,12 @@ export function ProfileContent({ user }: ProfileContentProps) {
                         className='w-full'
                         onClick={() => setDialogIsOpen(false)}
                       >
-                        Fechar modal
+                        Fechar
                       </Button>
 
                     </DialogContent>
                   </Dialog>
-
                 </div>
-
 
                 <FormField
                   control={form.control}
@@ -322,7 +314,6 @@ export function ProfileContent({ user }: ProfileContentProps) {
                 >
                   Salvar alterações
                 </Button>
-
               </div>
             </CardContent>
           </Card>

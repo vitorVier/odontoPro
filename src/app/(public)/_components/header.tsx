@@ -5,7 +5,6 @@ import Link from "next/link";
 import {
   Sheet,
   SheetContent,
-  SheetDescription,
   SheetHeader,
   SheetTitle,
   SheetTrigger,
@@ -14,12 +13,15 @@ import { Button } from "../../../components/ui/button";
 import { LogIn, Menu } from "lucide-react";
 import { useSession } from 'next-auth/react'
 import { handleRegister } from '../_actions/login'
+import logoImg from '../../../../public/logo-h.png'
+import Image from 'next/image';
 
 export function Header() {
   const { data: session, status } = useSession();
   const [isOpen, setIsOpen] = useState(false);
 
   const navItems = [
+    { href: "#hero", label: "Home" },
     { href: "#profissionais", label: "Profissionais" },
   ];
 
@@ -29,10 +31,14 @@ export function Header() {
 
   return (
     <header className="sticky top-0 z-50 bg-white border-b border-gray-100">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-        
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 h-18 flex items-center justify-between">
         <Link href="/" className="text-xl font-bold tracking-tight text-gray-900">
-          Odonto<span className="text-emerald-500">PRO</span>
+          {/* Odonto<span className="text-emerald-500">PRO</span> */}
+          <Image
+            src={logoImg}
+            alt="OdontoPRO Logo"
+            className="h-14 w-auto"
+          />
         </Link>
 
         {/* Desktop */}
@@ -115,7 +121,6 @@ export function Header() {
             </div>
           </SheetContent>
         </Sheet>
-
       </div>
     </header>
   );

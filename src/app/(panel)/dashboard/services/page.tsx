@@ -13,9 +13,9 @@ export default async function Services() {
 
   return (
     <PageContainer>
-      <PageHeader 
-        title="Serviços" 
-        description="Gerencie os procedimentos e serviços oferecidos pela clínica." 
+      <PageHeader
+        title="Serviços"
+        description="Gerencie os procedimentos e serviços oferecidos pela clínica."
       />
       <Suspense fallback={<div>Carregando...</div>}>
         <ServicesContent userId={session.user?.id!} />

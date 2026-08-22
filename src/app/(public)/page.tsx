@@ -15,9 +15,13 @@ export default async function Home() {
       <Header />
 
       <div>
-        <Hero />
+        <section id="hero" className="scroll-mt-20">
+          <Hero />
+        </section>
 
-        <Professionals professionals={professionals || []} />
+        <section id="profissionais" className="scroll-mt-20">
+          <Professionals professionals={professionals || []} />
+        </section>
 
         <Footer />
       </div>

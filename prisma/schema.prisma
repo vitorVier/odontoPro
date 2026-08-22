@@ -7,12 +7,13 @@ datasource db {
 }
 
 model Appointment {
-  id              String   @id @default(uuid())
+  id              String            @id @default(uuid())
   name            String // Nome do pacient
   email           String
   phone           String
   appointmentDate DateTime // Data do agendamento
   time            String // horário escolhido
+  source          AppointmentSource @default(DENTIST) // quem criou
 
   serviceId String // id do serviço agendado
   service   Service @relation(fields: [serviceId], references: [id])
@@ -22,6 +23,11 @@ model Appointment {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+enum AppointmentSource {
+  PATIENT
+  DENTIST
 }
 
 model Reminder {
@@ -96,8 +102,9 @@ model User {
   // Optional for WebAuthn support
   Authenticator Authenticator[]
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+  lastDashboardVisitAt   DateTime?
 }
 
 model Account {

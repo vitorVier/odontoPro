@@ -227,7 +227,21 @@ export function DialogNewAppointment({ open, onOpenChange, clinicId, clinicTimes
                         <SelectContent>
                           {services.map((s) => (
                             <SelectItem key={s.id} value={s.id}>
-                              {s.name} — {Math.floor(s.duration / 60)}h{s.duration % 60 > 0 ? ` ${s.duration % 60}min` : ""}
+                              {(() => {
+                                const duration = Number(s.duration);
+                                const hours = Math.floor(duration / 60);
+                                const minutes = duration % 60;
+
+                                const formattedDuration =hours > 0
+                                  ? `${hours}h${minutes > 0 ? ` ${minutes}min` : ""}`
+                                  : `${minutes}min`;
+
+                                return (
+                                  <span>
+                                    {s.name} - Duração: {formattedDuration}
+                                  </span>
+                                );
+                              })()}
                             </SelectItem>
                           ))}
                         </SelectContent>

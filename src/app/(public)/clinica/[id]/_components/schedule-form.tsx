@@ -8,8 +8,9 @@ export const appointmentSchema = z.object({
   name: z.string().min(1, "O nome é obrigatório"),
   email: z.string().email("O email é obrigatório"),
   phone: z.string().min(1, "O telefone é obrigatório"),
-  date: z.date(),
+  date: z.date({ message: "A data é obrigatória" }),
   serviceId: z.string().min(1, "O serviço é obrigatório"),
+  time: z.string().min(1, "O horário é obrigatório"),
 })
 
 export type AppointmentFormData = z.infer<typeof appointmentSchema>
@@ -17,11 +18,13 @@ export type AppointmentFormData = z.infer<typeof appointmentSchema>
 export function useAppointmentForm() {
   return useForm<AppointmentFormData>({
     resolver: zodResolver(appointmentSchema),
+    mode: "onChange",
     defaultValues: {
       name: "",
       email: "",
       phone: "",
       serviceId: "",
+      time: "",
       date: new Date(),
     }
   })

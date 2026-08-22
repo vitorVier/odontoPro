@@ -2,9 +2,10 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { usePathname } from "next/navigation";
 import clsx from "clsx";
+import logoImg from '../../../../../public/logo-h.png'
+import logoIcon from '../../../../../public/logo-odonto.png'
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -22,7 +23,6 @@ import {
 } from "@/components/ui/tooltip";
 import {
   CalendarCheck2,
-  Folder,
   Settings,
   Banknote,
   ChevronLeft,
@@ -33,6 +33,7 @@ import {
 } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { getPermissionUserToReports } from "../reports/_data-access/get-permission-reprots";
+import Image from "next/image";
 
 interface NavigationItem {
   href: string;
@@ -69,7 +70,7 @@ export function SidebarDashboard({ children }: { children: React.ReactNode }) {
     {
       href: "/dashboard/services",
       label: "Serviços",
-      icon: Folder,
+      icon: Stethoscope,
       category: "Painel",
     },
     ...(hasReportAccess
@@ -99,33 +100,40 @@ export function SidebarDashboard({ children }: { children: React.ReactNode }) {
   return (
     <TooltipProvider>
       <div className="min-h-screen w-full bg-gray-50/50 flex flex-col md:flex-row">
-
         {/* Sidebar Desktop */}
         <aside
           className={clsx(
             "hidden md:flex flex-col fixed left-0 top-0 h-screen bg-white border-r border-gray-100 z-40 transition-all duration-300 p-4 justify-between",
             {
-              "w-20": isCollapsed,
+              "w-25": isCollapsed,
               "w-64": !isCollapsed,
             }
           )}
         >
           <div className="space-y-6">
-            {/* Header / Logo */}
-            <div className="h-10 flex items-center justify-between px-2">
+            <div className="flex items-center justify-center px-2 py-4">
               {!isCollapsed ? (
-                <Link href="/dashboard" className="flex items-center gap-2 font-bold text-lg text-gray-900">
-                  <div className="p-1.5 bg-emerald-500 rounded-lg text-white">
-                    <Stethoscope className="w-4 h-4" />
-                  </div>
-                  <span>Odonto<span className="text-emerald-600">PRO</span></span>
+                <Link href="/dashboard" className="flex items-center font-bold text-lg text-gray-900">
+                  <Image
+                    src={logoImg}
+                    alt="OdontoPRO Logo"
+                    className="w-auto h-24 md:h-12 transition-all duration-300"
+                  />
                 </Link>
               ) : (
-                <div className="p-1.5 bg-emerald-500 rounded-lg text-white mx-auto">
-                  <Stethoscope className="w-5 h-5" />
-                </div>
+                <Link href="/dashboard" className="flex items-center font-bold text-lg text-gray-900">
+                  <div className="object-cover w-25 h-25 md:w-16 md:h-16 rounded-lg text-white mx-auto cursor-pointer transition-all duration-300">
+                    <Image
+                      src={logoIcon}
+                      alt="OdontoPRO Logo"
+                      quality={100}
+                      priority
+                      className="object-contain w-full h-full scale-125"
+                    />
+                  </div>
+                </Link>
               )}
-            </div>
+          </div>
 
             {/* Navegação */}
             <nav className="space-y-4">
@@ -193,10 +201,11 @@ export function SidebarDashboard({ children }: { children: React.ReactNode }) {
           {/* Header Mobile */}
           <header className="md:hidden sticky top-0 z-30 bg-white border-b border-gray-100 px-4 h-14 flex items-center justify-between">
             <div className="flex items-center gap-2 font-bold text-gray-900">
-              <div className="p-1 bg-emerald-500 rounded-md text-white">
-                <Stethoscope className="w-4 h-4" />
-              </div>
-              <span>Odonto<span className="text-emerald-600">PRO</span></span>
+              <Image
+                src={logoImg}
+                alt="OdontoPRO Logo"
+                className="h-8 w-auto"
+              />
             </div>
 
             <Sheet open={isMobileOpen} onOpenChange={setIsMobileOpen}>
@@ -206,7 +215,7 @@ export function SidebarDashboard({ children }: { children: React.ReactNode }) {
                 </Button>
               </SheetTrigger>
 
-              <SheetContent side="left" className="w-64 p-6 flex flex-col justify-between">
+              <SheetContent side="right" className="w-64 p-6 flex flex-col justify-between">
                 <div className="space-y-6">
                   <SheetHeader className="text-left border-b border-gray-100 pb-4">
                     <SheetTitle className="text-base font-bold text-gray-900">
@@ -217,7 +226,7 @@ export function SidebarDashboard({ children }: { children: React.ReactNode }) {
                     </SheetDescription>
                   </SheetHeader>
 
-                  <nav className="space-y-1">
+                  <nav className="space-y-5">
                     {NAVIGATION_ITEMS.map((item) => (
                       <SidebarLink
                         key={item.href}
@@ -270,7 +279,7 @@ function SidebarLink({
       href={href}
       onClick={onClick}
       className={clsx(
-        "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-300 relative overflow-hidden",
+        "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-300 relative overflow-hidden scroll-smooth",
         {
           "bg-emerald-50/80 text-emerald-700 font-semibold before:absolute before:left-0 before:top-2 before:bottom-2 before:w-1 before:bg-emerald-500 before:rounded-r-md": isActive && !isCollapsed,
           "bg-emerald-50/80 text-emerald-700 font-semibold": isActive && isCollapsed,

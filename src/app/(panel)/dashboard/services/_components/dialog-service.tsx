@@ -121,7 +121,7 @@ export function DialogService({ closeModal, initialValues, serviceId }: DialogSe
                     Nome do serviço
                   </FormLabel>
                   <FormControl>
-                    <Input {...field} placeholder="Ex: Corte de Cabelo Masculino" />
+                    <Input {...field} placeholder="Ex: Clareamento Dental" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

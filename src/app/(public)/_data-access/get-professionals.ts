@@ -11,6 +11,12 @@ export async function getProfessionals() {
       },
       include: {
         subscription: true,
+        services: {
+          select: {
+            name: true
+          },
+          take: 3
+        }
       }
     })
 

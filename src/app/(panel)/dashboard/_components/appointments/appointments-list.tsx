@@ -54,18 +54,24 @@ export function AppointmentsList({ times, clinicId, clinicTimes, services }: App
 
       return (await response.json()) as AppointmentWithService[];
     },
-    staleTime: 20000,
+    staleTime: 0,
     refetchInterval: 60000,
+    refetchOnWindowFocus: true
   })
 
   // Mapeia ocupação dos slots
   const occupantMap: Record<string, AppointmentWithService> = {}
-
   if (data && data.length > 0) {
     for (const appointment of data) {
-      const requiredSlots = Math.ceil(appointment.service.duration / 30)
+      // CORREÇÃO: Se a duração for 0, nula ou undefined, assume 30 minutos (1 slot)
+      const duration = appointment.service?.duration && appointment.service.duration > 0
+        ? appointment.service.duration
+        : 30;
 
-      const normalizedAppointmentTime = appointment.time.padStart(5, '0')
+      const requiredSlots = Math.ceil(duration / 30)
+
+      const cleanedTime = appointment.time.split(":").slice(0, 2).join(":")
+      const normalizedAppointmentTime = cleanedTime.padStart(5, '0')
       const normalizedTimes = times.map((t) => t.padStart(5, '0'))
 
       const startIndex = normalizedTimes.indexOf(normalizedAppointmentTime)
@@ -100,118 +106,132 @@ export function AppointmentsList({ times, clinicId, clinicTimes, services }: App
   return (
     <>
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <Card className="border-gray-100 shadow-sm">
-          <CardHeader className='flex flex-row items-center justify-between border-b border-gray-50 pb-4 mb-4 space-y-0'>
-            <CardTitle className='text-xl font-bold text-gray-900'>
-              Agenda do Dia
-            </CardTitle>
+        <Card className="border border-border/50 bg-card shadow-xs transition-all hover:shadow-md duration-300">
+          {/* Cabeçalho Padronizado com os outros componentes */}
+          <CardHeader className='flex flex-row items-center justify-between border-b border-border/30 pb-4 mb-4 space-y-0'>
+            <div className="space-y-0.5">
+              <CardTitle className='text-sm font-bold tracking-tight text-foreground'>
+                Agenda do Dia
+              </CardTitle>
+              <p className="text-[11px] text-muted-foreground">
+                Grade cronológica de atendimentos de cadeira
+              </p>
+            </div>
+
             <div className="flex items-center gap-2">
               <ButtonPickerAppointment />
               <Button
                 size="sm"
-                className="gap-1.5"
+                type="button"
+                className="gap-1.5 font-semibold text-xs uppercase tracking-wider h-8"
                 onClick={() => setIsNewOpen(true)}
               >
-                <Plus className="w-4 h-4" />
+                <Plus className="w-3.5 h-3.5" />
                 <span className="hidden sm:inline">Novo</span>
               </Button>
             </div>
           </CardHeader>
 
-          <CardContent>
-            <ScrollArea className='h-[calc(100vh-20rem)] lg:h-[calc(100vh-16rem)] pr-4'>
+          <CardContent className="pt-0">
+            <ScrollArea className='h-[calc(100vh-25rem)] lg:h-[calc(100vh-22rem)] pr-4'>
               {isLoading ? (
                 <div className="space-y-3">
                   {[1, 2, 3, 4, 5, 6].map((i) => (
-                    <div key={i} className="h-16 w-full rounded-xl bg-gray-100 animate-pulse" />
+                    <div key={i} className="h-16 w-full rounded-xl bg-muted/60 animate-pulse" />
                   ))}
                 </div>
               ) : isError ? (
-                <div className="flex flex-col items-center justify-center h-40 text-gray-400 gap-2">
+                <div className="flex flex-col items-center justify-center h-40 text-muted-foreground gap-2">
                   <AlertCircle className="w-8 h-8 text-rose-400" />
-                  <p>Falha ao carregar agendamentos.</p>
-                  <Button variant="outline" size="sm" onClick={() => refetch()}>Tentar novamente</Button>
+                  <p className="text-xs">Falha ao carregar agendamentos.</p>
+                  <Button type="button" variant="outline" size="sm" onClick={() => refetch()}>Tentar novamente</Button>
                 </div>
               ) : (
                 <div className="space-y-1.5">
                   {times.map((slot) => {
                     const occupant = occupantMap[slot];
-                    const isStartOfAppointment = occupant?.time === slot;
-                    const isContinuation = occupant && occupant.time !== slot;
+                    const occupantTime = occupant?.time ? occupant.time.split(":").slice(0, 2).join(":") : "";
 
-                    // Renderização visual de slots continuados (evita repetir o card do paciente)
-                    if (isContinuation) {
+                    const isContinuation = !!(occupant && occupantTime !== slot);
+                    const isStartOfAppointment = !!(occupant && occupantTime === slot);
+
+                    if (isContinuation && occupant) {
                       return (
-                        <div key={slot} className='flex items-start py-1 relative group'>
-                          <div className='w-16 text-[13px] font-medium text-gray-300 pt-1'>
+                        <div key={slot} className='flex items-center py-1.5 px-3 relative group select-none'>
+                          <div className='w-16 text-xs font-bold text-muted-foreground/40'>
                             {slot}
                           </div>
-                          <div className='flex-1 ml-4 border-l-2 border-emerald-200/40 h-8' />
+                          <div className='flex-1 ml-4 border-l-2 border-primary/30 h-7 flex items-center pl-3 text-xs text-muted-foreground/50 italic font-medium bg-muted/5 rounded-r-md'>
+                            Procedimento em andamento... ({occupant.name})
+                          </div>
                         </div>
-                      )
+                      );
                     }
 
-                    // Renderização de slot Ocupado (Início)
-                    if (isStartOfAppointment) {
+                    // 2. Renderização de slot Ocupado (Início do procedimento)
+                    if (isStartOfAppointment && occupant) {
                       return (
                         <div
                           key={slot}
-                          className='group flex items-center p-3 rounded-xl bg-white border border-gray-100 shadow-[0_2px_10px_-3px_rgba(0,0,0,0.02)] transition-all hover:border-emerald-200 hover:shadow-md relative overflow-hidden before:absolute before:left-0 before:top-2 before:bottom-2 before:w-1 before:bg-emerald-400 before:rounded-r-md'
+                          className='group flex items-center p-3 rounded-xl bg-card border border-border/50 shadow-[0_2px_10px_-3px_rgba(0,0,0,0.01)] transition-all hover:border-primary/40 hover:shadow-xs relative overflow-hidden before:absolute before:left-0 before:top-2 before:bottom-2 before:w-1 before:bg-primary before:rounded-r-md'
                         >
-                          <div className='w-16 text-sm font-bold text-gray-900 ml-1'>
+                          <div className='w-16 text-sm font-extrabold text-foreground ml-1'>
                             {slot}
                           </div>
 
-                          <div className='flex-1 flex flex-col justify-center min-w-0 px-2'>
-                            <div className='font-semibold text-gray-900 truncate text-sm'>
+                          <div className='flex-1 flex flex-col justify-center min-w-0 px-2 space-y-0.5'>
+                            <div className='font-bold text-foreground truncate text-sm group-hover:text-primary transition-colors'>
                               {occupant.name}
                             </div>
-                            <div className='flex items-center gap-2 text-xs text-gray-500 truncate mt-0.5'>
-                              <span>{occupant.phone}</span>
-                              <span className="w-1 h-1 rounded-full bg-gray-300" />
-                              <span className="truncate">{occupant.service.name}</span>
+                            <div className='flex items-center gap-1.5 text-xs text-muted-foreground truncate pl-0.5'>
+                              <span className="font-medium">{occupant.phone}</span>
+                              <span className="w-1 h-1 rounded-full bg-border" />
+                              <span className="truncate bg-muted px-1.5 py-0.5 rounded text-[11px] font-semibold text-muted-foreground">{occupant.service?.name}</span>
                             </div>
                           </div>
 
-                          <div className='flex items-center gap-1 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity shrink-0'>
+                          {/* Ações do Registro (type="button" impede submits fantasmas) */}
+                          <div className='flex items-center gap-1 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-150 shrink-0 bg-background/80 backdrop-blur-xs rounded-lg p-0.5 border border-border/30 shadow-xs'>
                             <DialogTrigger asChild>
                               <Button
+                                type="button"
                                 variant="ghost"
                                 size="icon"
-                                className="h-8 w-8 text-gray-500 hover:text-emerald-600 hover:bg-emerald-50"
+                                className="h-7 w-7 text-muted-foreground hover:text-primary hover:bg-muted"
                                 onClick={() => setDetailAppointment(occupant)}
                                 title="Visualizar Detalhes"
                               >
-                                <Eye className='w-4 h-4' />
+                                <Eye className='w-3.5 h-3.5' />
                               </Button>
                             </DialogTrigger>
 
                             <Button
+                              type="button"
                               variant="ghost"
                               size="icon"
-                              className="h-8 w-8 text-gray-500 hover:text-rose-600 hover:bg-rose-50"
+                              className="h-7 w-7 text-muted-foreground hover:text-rose-600 hover:bg-rose-500/10"
                               onClick={() => handleCancelAppointment(occupant.id)}
                               title="Cancelar Agendamento"
                             >
-                              <X className='w-4 h-4' />
+                              <X className='w-3.5 h-3.5' />
                             </Button>
                           </div>
                         </div>
                       )
                     }
 
-                    // Renderização de slot Disponível
+                    // 3. Renderização de slot Disponível (Vago)
                     return (
                       <div
                         key={slot}
-                        className='flex items-center py-2.5 px-3 rounded-xl border border-transparent hover:border-dashed hover:border-gray-200 hover:bg-gray-50/50 transition-all group'
+                        className='flex items-center py-2.5 px-3 rounded-xl border border-transparent hover:border-dashed hover:border-border/60 hover:bg-muted/30 transition-all group'
                       >
-                        <div className='w-16 text-sm font-medium text-gray-400 group-hover:text-emerald-600 transition-colors ml-1'>
+                        <div className='w-16 text-xs font-bold text-muted-foreground/50 group-hover:text-primary transition-colors ml-1'>
                           {slot}
                         </div>
-                        <div className='flex-1 flex items-center gap-2 text-sm text-gray-400 group-hover:text-gray-500 transition-colors'>
-                          <Clock className="w-3.5 h-3.5" />
-                          Disponível
+                        <div className='flex-1 flex items-center gap-2 text-xs font-medium text-muted-foreground/50 group-hover:text-muted-foreground transition-colors'>
+                          <Clock className="w-3.5 h-3.5 text-muted-foreground/40 group-hover:text-primary/70 transition-colors" />
+                          <span>Horário livre</span>
                         </div>
                       </div>
                     )

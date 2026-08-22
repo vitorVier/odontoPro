@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import doctorImg from '../../../../public/doctor-hero.png'
-import { ArrowRight, CheckCircle2, ShieldCheck, Sparkles, Star } from "lucide-react";
+import { ArrowRight, CheckCircle2 } from "lucide-react";
 
 export function Hero() {
   return (

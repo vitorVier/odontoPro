@@ -6,6 +6,8 @@ import { Appointments } from './_components/appointments/appointments'
 import { checkSubscription } from '@/utils/permissions/checkSubscription'
 import { LabelSubscription } from '@/components/ui/label-subscription'
 import { PageContainer, PageHeader } from "@/components/ui/page-layout"
+import { getNewAppointments } from './_data-access/get-new-appointments'
+import { NewAppointmentsNotifier } from './_components/new-appointments-notifier'
 
 export default async function Dashboard() {
   const session = await getSesion()
@@ -15,9 +17,11 @@ export default async function Dashboard() {
   }
 
   const subscription = await checkSubscription(session?.user?.id!)
+  const newAppointments = await getNewAppointments(session?.user?.id!)
 
   return (
     <PageContainer className="space-y-6">
+      <NewAppointmentsNotifier appointments={newAppointments} userId={session.user?.id!} />
       <PageHeader 
         title="Visão Geral" 
         description="Acompanhe sua agenda e lembretes para hoje."

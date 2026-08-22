@@ -2,6 +2,7 @@
 
 import prisma from '@/lib/prisma'
 import { z } from 'zod'
+import { revalidatePath } from 'next/cache'
 
 const formSchema = z.object({
   name: z.string().min(1, "O nome é obrigatório"),
@@ -45,9 +46,12 @@ export async function createNewAppointment(formData: FormSchema) {
         time: formData.time,
         appointmentDate: appointmentDate,
         serviceId: formData.serviceId,
-        userId: formData.clinicId
+        userId: formData.clinicId,
+        source: "PATIENT"
       }
     })
+
+    revalidatePath("/dashboard")
 
     return {
       data: newAppointment
