@@ -52,7 +52,7 @@ export function PageContainer({
   return (
     <main
       className={clsx(
-        "mx-auto w-full max-w-[1600px] px-4 sm:px-6 lg:px-8 2xl:px-10",
+        "mx-auto w-full max-w-[1600px] px-4 py-4 sm:px-6 sm:py-6 lg:px-8 2xl:px-10",
         className
       )}
     >

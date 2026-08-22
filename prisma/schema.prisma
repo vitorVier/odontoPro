@@ -22,6 +22,9 @@ model Appointment {
   userId String // id da clinica (user)
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  patientId String?
+  patient   Patient? @relation(fields: [patientId], references: [id], onDelete: SetNull)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -104,12 +107,32 @@ model User {
 
   accounts      Account[]
   sessions      Session[]
-  // Optional for WebAuthn support
+  patients Patient[]
   Authenticator Authenticator[]
 
   createdAt              DateTime @default(now())
   updatedAt              DateTime @updatedAt
   lastDashboardVisitAt   DateTime?
+}
+
+model Patient {
+  id        String    @id @default(cuid())
+  name      String
+  email     String
+  phone     String
+  birthDate DateTime?
+  notes     String?   @default("")
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  appointments Appointment[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, email]) // mesmo paciente não se duplica dentro da mesma clínica
+  @@index([userId])
 }
 
 model Account {

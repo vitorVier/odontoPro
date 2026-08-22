@@ -66,6 +66,7 @@ import { createNewAppointment } from "../_actions/create-appointment"
 import { toast } from "sonner"
 
 import imgTest from "../../../../../../public/foto1.png"
+import Link from "next/link"
 
 type UserWithServiceAndSubscription = Prisma.UserGetPayload<{
   include: {
@@ -252,11 +253,19 @@ export function ScheduleContent({ clinic }: ScheduleContentProps) {
             <div className="flex items-center gap-1.5 mt-2 text-sm text-muted-foreground text-center">
               <MapPin className="w-4 h-4 shrink-0 text-emerald-500" />
 
-              <span className="line-clamp-2">
-                {clinic.address || "Endereço não informado"}
-              </span>
+              {clinic.address ? (
+                <Link
+                  href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(clinic.address)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="line-clamp-2 underline-offset-2 hover:underline hover:text-emerald-600 transition-colors"
+                >
+                  {clinic.address}
+                </Link>
+              ) : (
+                <span className="line-clamp-2">Endereço não informado</span>
+              )}
             </div>
-
           </CardContent>
         </Card>
 
@@ -638,6 +647,18 @@ export function ScheduleContent({ clinic }: ScheduleContentProps) {
                   <p className="text-center text-[11px] text-muted-foreground">
                     Ao confirmar, sua consulta será registrada
                     com a clínica.
+                  </p>
+                  <p className="text-center text-[11px] text-muted-foreground">
+                    Para cancelar ou remarcar, entre em contato diretamente com a clínica
+                    {clinic.phone && (
+                      <>
+                        {" "}pelo telefone{" "}
+                        <span className="font-medium text-foreground">
+                          {clinic.phone}
+                        </span>
+                      </>
+                    )}
+                    .
                   </p>
                 </div>
               </form>

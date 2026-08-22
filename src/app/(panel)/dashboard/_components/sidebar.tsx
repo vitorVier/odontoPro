@@ -22,7 +22,6 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import {
-  CalendarCheck2,
   Settings,
   Banknote,
   ChevronLeft,
@@ -32,7 +31,7 @@ import {
   BarChart3,
   Calendar,
   LayoutDashboard,
-  Calendar1,
+  Users,
 } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { getPermissionUserToReports } from "../reports/_data-access/get-permission-reprots";
@@ -80,6 +79,12 @@ export function SidebarDashboard({ children }: { children: React.ReactNode }) {
       href: "/dashboard/services",
       label: "Serviços",
       icon: Stethoscope,
+      category: "Painel",
+    },
+    {
+      href: "/dashboard/patients",
+      label: "Pacientes",
+      icon: Users,
       category: "Painel",
     },
     ...(hasReportAccess

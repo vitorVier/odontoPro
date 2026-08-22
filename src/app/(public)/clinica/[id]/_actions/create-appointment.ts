@@ -7,6 +7,7 @@ import { Prisma } from '@prisma/client'
 import { headers } from 'next/headers'
 import { subMinutes } from 'date-fns'
 import { auth } from '@/lib/auth'
+import { findOrCreatePatient } from '@/utils/patients/find-or-create-patient'
 
 const formSchema = z.object({
   name: z.string().min(1, "O nome é obrigatório"),
@@ -110,6 +111,13 @@ export async function createNewAppointment(formData: FormSchema) {
       return { error: "Este horário acabou de ser reservado. Escolha outro horário." }
     }
 
+    const patient = await findOrCreatePatient({
+      userId: formData.clinicId,
+      name: formData.name,
+      email: formData.email,
+      phone: formData.phone,
+    });
+
     const newAppointment = await prisma.appointment.create({
       data: {
         name: formData.name,
@@ -119,6 +127,7 @@ export async function createNewAppointment(formData: FormSchema) {
         appointmentDate,
         serviceId: formData.serviceId,
         userId: formData.clinicId,
+        patientId: patient.id,
         source: isTrustedDashboardContext ? "DENTIST" : "PATIENT",
         ipAddress: isTrustedDashboardContext ? null : ip,
       },

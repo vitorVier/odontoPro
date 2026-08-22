@@ -34,7 +34,7 @@ export default async function Reports() {
   // ───── CENÁRIO 1: SEM PERMISSÃO (PAYWALL EXTRA-OTIMIZADO) ─────
   if (!hasPermission) {
     return (
-      <PageContainer className="space-y-6">
+      <PageContainer className="space-y-5 px-4 py-4 sm:space-y-6 sm:px-6 sm:py-6">
         <PageHeader
           title="Relatórios e Métricas"
           description="Acompanhe o desempenho da sua clínica em tempo real."
@@ -43,13 +43,13 @@ export default async function Reports() {
         {/* Banner de Upgrade Premium com Paleta de Alerta Sofisticada */}
         <div
           role="alert"
-          className="flex flex-col md:flex-row md:items-center justify-between gap-5 p-5 rounded-2xl border shadow-sm bg-amber-500/5 dark:bg-amber-500/10 border-amber-500/30 text-foreground"
+          className="flex flex-col gap-5 rounded-2xl border border-amber-500/30 bg-amber-500/5 p-4 shadow-sm dark:bg-amber-500/10 text-foreground sm:p-5 md:flex-row md:items-center md:justify-between"
         >
           <div className="flex items-start gap-3.5">
             <div className="p-2.5 rounded-xl shrink-0 bg-amber-500/10 text-amber-600 dark:text-amber-400">
               <Lock className="w-5 h-5" />
             </div>
-            <div className="space-y-1">
+            <div className="space-y-1 min-w-0">
               <h3 className="font-bold text-base leading-tight tracking-tight">
                 Métricas e Relatórios Avançados Bloqueados
               </h3>
@@ -58,7 +58,7 @@ export default async function Reports() {
               </p>
             </div>
           </div>
-          <Button asChild size="sm" className="w-full md:w-auto shrink-0 font-bold text-xs uppercase tracking-wider h-10 shadow-md bg-amber-500 hover:bg-amber-600 text-white self-stretch md:self-center">
+          <Button asChild size="sm" className="w-full shrink-0 font-bold text-xs uppercase tracking-wider h-10 shadow-md bg-amber-500 hover:bg-amber-600 text-white md:w-auto">
             <Link href="/dashboard/plans" className="flex items-center justify-center gap-1.5">
               <Sparkles className="w-3.5 h-3.5" />
               <span>Conhecer Planos</span>
@@ -68,7 +68,7 @@ export default async function Reports() {
         </div>
 
         {/* Grade de Preview Fantasma / Blur Realista */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 opacity-40 pointer-events-none select-none relative">
+        <div className="grid grid-cols-1 gap-4 opacity-40 pointer-events-none select-none relative sm:grid-cols-3">
           {[
             { label: "Agendamentos no mês", icon: BarChart3 },
             { label: "Faturamento estimado", icon: TrendingUp },
@@ -107,20 +107,20 @@ export default async function Reports() {
   )
 
   return (
-    <PageContainer className="space-y-6">
+    <PageContainer className="space-y-5 px-4 py-4 sm:space-y-6 sm:px-6 sm:py-6">
       {/* Cabeçalho da Página com o Badge Ajustado */}
       <PageHeader
         title="Relatórios e Métricas"
         description="Acompanhe o desempenho da sua clínica em tempo real."
       >
-        <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 text-xs font-bold uppercase tracking-wider select-none shrink-0">
+        <div className="inline-flex w-fit items-center gap-1.5 px-2.5 py-1 rounded-md bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 text-xs font-bold uppercase tracking-wider select-none shrink-0">
           <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
           Plano Ativo
         </div>
       </PageHeader>
 
       {/* ── Seção: KPIs Principais do Topo ── */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 gap-4 xs:grid-cols-2 lg:grid-cols-4">
         <KpiCard
           title="Agendamentos este mês"
           value={String(data?.appointmentsThisMonth ?? 0)}
@@ -148,13 +148,13 @@ export default async function Reports() {
       </div>
 
       {/* ── Seção: Gráficos de Fluxo e Tendência ── */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 gap-5 md:grid-cols-2 md:gap-6">
         <MonthlyChart data={data?.last6Months ?? []} />
         <WeekdayChart data={data?.byWeekday ?? []} />
       </div>
 
       {/* ── Seção: Tabelas de Rankings e Próximas Consultas ── */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 gap-5 md:grid-cols-2 md:gap-6">
         <TopServices data={data?.topServices ?? []} />
         <UpcomingAppointments appointments={data?.upcomingAppointments ?? []} />
       </div>
