@@ -111,6 +111,7 @@ model User {
   sessions      Session[]
   patients Patient[]
   Authenticator Authenticator[]
+  scheduleBlocks ScheduleBlock[]
 
   createdAt              DateTime @default(now())
   updatedAt              DateTime @updatedAt
@@ -190,4 +191,26 @@ model Authenticator {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@id([userId, credentialID])
+}
+
+model ScheduleBlock {
+  id        String   @id @default(cuid())
+
+  startDate DateTime // meia-noite UTC do primeiro dia bloqueado
+  endDate   DateTime // meia-noite UTC do último dia bloqueado (igual a startDate se for 1 dia só)
+
+  startTime String?  // "12:00" — se null, bloqueia o(s) dia(s) inteiro(s)
+  endTime   String?  // "13:00"
+
+  recurring Boolean  @default(false) // true = repete todo dia da semana, ignora o range de datas (usa startDate só como "a partir de quando")
+
+  reason    String?  // "Férias", "Feriado", "Almoço", "Consulta médica" etc.
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId, startDate])
 }

@@ -9,6 +9,8 @@ import { subMinutes } from 'date-fns'
 import { auth } from '@/lib/auth'
 import { findOrCreatePatient } from '@/utils/patients/find-or-create-patient'
 import { sendAppointmentConfirmation } from '@/lib/notifications/send-appointment-confirmation'
+import { isSlotBlocked } from '@/utils/schedule/is-slot-blocked'
+import { getScheduleBlocks } from '@/utils/schedule/get-schedule-blocks'
 
 const formSchema = z.object({
   name: z.string().min(1, "O nome é obrigatório"),
@@ -88,6 +90,16 @@ export async function createNewAppointment(formData: FormSchema) {
     const month = selectedDate.getMonth()
     const day = selectedDate.getDate()
     const appointmentDate = new Date(Date.UTC(year, month, day, 0, 0, 0, 0))
+
+    const relevantBlocks = await getScheduleBlocks({
+      userId: formData.clinicId,
+      startDate: appointmentDate,
+      endDate: appointmentDate,
+    })
+
+    if (isSlotBlocked(appointmentDate, formData.time, relevantBlocks)) {
+      return { error: "A clínica não está disponível neste horário." }
+    }
 
     const service = await prisma.service.findUnique({ where: { id: formData.serviceId } })
     if (!service) {

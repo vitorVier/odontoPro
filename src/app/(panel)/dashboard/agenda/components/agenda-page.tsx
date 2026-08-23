@@ -34,26 +34,37 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
+import { ScheduleBlockDialog } from "./schedule-block-dialog"
+import { ScheduleBlock } from "@prisma/client"
+import { ManageScheduleBlocksDialog } from "./manage-schedule-blocks-dialog"
+import { getActiveScheduleBlocks } from "../_data-access/get-active-schedule-blocks"
 
 type ViewMode = "week" | "month"
 
 interface AgendaPageProps {
   userId: string
   times: string[]
+  scheduleBlocks: ScheduleBlock[]
 }
 
-export default function AgendaPage({ userId, times }: AgendaPageProps) {
+export default function AgendaPage({ userId, times, scheduleBlocks: initialScheduleBlocks }: AgendaPageProps) {
     const [currentDate, setCurrentDate] = useState(new Date())
     const [view, setView] = useState<ViewMode>("week")
     const [appointments, setAppointments] = useState<AppointmentWithService[]>([])
     const [summary, setSummary] = useState<{ date: string; count: number }[]>([])
     const [loading, setLoading] = useState(false)
     const [datePickerOpen, setDatePickerOpen] = useState(false)
+    const [scheduleBlocks, setScheduleBlocks] = useState<ScheduleBlock[]>(initialScheduleBlocks)
 
     function handleSelectDate(selected: Date | undefined) {
         if (!selected) return
         setCurrentDate(selected)
         setDatePickerOpen(false)
+    }
+
+    async function refreshScheduleBlocks() {
+        const data = await getActiveScheduleBlocks()
+        setScheduleBlocks(data)
     }
 
     const fetchAgenda = useCallback(async () => {
@@ -186,7 +197,7 @@ export default function AgendaPage({ userId, times }: AgendaPageProps) {
 
                     <div className="flex flex-wrap items-center gap-2">
                         {/* NAVEGAÇÃO */}
-                        <div className="flex items-center rounded-xl border bg-background shadow-xs overflow-hidden">
+                        <div className="flex items-center justify-around rounded-xl border bg-background shadow-xs overflow-hidden">
                             <Button
                                 variant="ghost"
                                 size="icon"
@@ -231,7 +242,6 @@ export default function AgendaPage({ userId, times }: AgendaPageProps) {
                             >
                                 <ChevronRight className="h-4 w-4" />
                             </Button>
-
                         </div>
 
                         {/* HOJE */}
@@ -259,59 +269,67 @@ export default function AgendaPage({ userId, times }: AgendaPageProps) {
                                 </span>
                             )}
                         </Button>
-
-                        {/* VISUALIZAÇÃO */}
-                        <div className="flex rounded-xl border bg-muted/30 p-1">
-                            <Button
-                                variant={view === "week" ? "secondary" : "ghost"}
-                                size="sm"
-                                className={cn(
-                                    "h-8 rounded-lg px-3",
-                                    view === "week" && "shadow-xs"
-                                )}
-                                onClick={() => setView("week")}
-                            >
-                                Semana
-                            </Button>
-
-                            <Button
-                                variant={view === "month" ? "secondary" : "ghost"}
-                                size="sm"
-                                className={cn(
-                                    "h-8 rounded-lg px-3",
-                                    view === "month" && "shadow-xs"
-                                )}
-                                onClick={() => setView("month")}
-                            >
-                                Mês
-                            </Button>
-                        </div>
                     </div>
                 </CardHeader>
             </Card>
 
-        {/* CALENDÁRIO */}
-        <Card className="overflow-hidden border-border/50 shadow-xs">
-            <CardContent className="p-0">
-            {loading ? (
-                <AgendaSkeleton />
-            ) : view === "week" ? (
-                <WeekView
-                    currentDate={currentDate}
-                    appointments={appointments}
-                    times={times}
-                />
-            ) : (
-                <MonthView
-                    currentDate={currentDate}
-                    appointments={appointments}
-                    summary={summary}
-                    onSelectDate={setCurrentDate}
-                    onChangeToWeek={() => setView("week")}
-                />
-            )}
-            </CardContent>
-        </Card>
+            <section className="w-full flex justify-between items-center px-2 gap-2">
+                {/* VISUALIZAÇÃO */}
+                <div className="flex rounded-xl border bg-muted/30 p-1">
+                    <Button
+                        variant={view === "week" ? "secondary" : "ghost"}
+                        size="sm"
+                        className={cn(
+                            "h-8 rounded-lg px-3",
+                            view === "week" && "shadow-xs"
+                        )}
+                        onClick={() => setView("week")}
+                    >
+                        Semana
+                    </Button>
+
+                    <Button
+                        variant={view === "month" ? "secondary" : "ghost"}
+                        size="sm"
+                        className={cn(
+                            "h-8 rounded-lg px-3",
+                            view === "month" && "shadow-xs"
+                        )}
+                        onClick={() => setView("month")}
+                    >
+                        Mês
+                    </Button>
+                </div>
+
+                <div>
+                    <ManageScheduleBlocksDialog onChanged={refreshScheduleBlocks} />
+                    <ScheduleBlockDialog clinicTimes={times} onCreated={refreshScheduleBlocks} />
+                </div>
+            </section>
+
+            {/* CALENDÁRIO */}
+            <Card className="overflow-hidden border-border/50 shadow-xs">
+                <CardContent className="p-0">
+                {loading ? (
+                    <AgendaSkeleton />
+                ) : view === "week" ? (
+                    <WeekView
+                        currentDate={currentDate}
+                        appointments={appointments}
+                        times={times}
+                        scheduleBlocks={scheduleBlocks}
+                    />
+                ) : (
+                    <MonthView
+                        currentDate={currentDate}
+                        appointments={appointments}
+                        summary={summary}
+                        onSelectDate={setCurrentDate}
+                        onChangeToWeek={() => setView("week")}
+                    />
+                )}
+                </CardContent>
+            </Card>
         </main>
     )
 }

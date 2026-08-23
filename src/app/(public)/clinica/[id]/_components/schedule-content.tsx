@@ -139,26 +139,30 @@ export function ScheduleContent({ clinic }: ScheduleContentProps) {
     }
 
     let cancelled = false
-
     setLoadingSlots(true)
 
-    fetch(
-      `${process.env.NEXT_PUBLIC_URL}/api/schedule/get-appointments?userId=${clinic.id}&date=${selectedDateString}`
-    )
-      .then((response) => response.json())
-      .then((blocked: string[]) => {
+    Promise.all([
+      fetch(`${process.env.NEXT_PUBLIC_URL}/api/schedule/get-appointments?userId=${clinic.id}&date=${selectedDateString}`)
+        .then((r) => r.json()),
+      fetch(`${process.env.NEXT_PUBLIC_URL}/api/schedule/get-blocked-slots?userId=${clinic.id}&date=${selectedDateString}`)
+        .then((r) => r.json()),
+    ])
+      .then(([occupiedTimes, blockedByScheduleBlocks]) => {
         if (cancelled) return
 
-        const safeBlocked = Array.isArray(blocked)
-          ? blocked
-          : []
+        const safeOccupied = Array.isArray(occupiedTimes) ? occupiedTimes : []
+        const safeBlocked = Array.isArray(blockedByScheduleBlocks) ? blockedByScheduleBlocks : []
 
-        setBlockedTimes(safeBlocked)
+        // Une os dois motivos de indisponibilidade num único array,
+        // pro componente de seleção de horário não precisar saber a diferença.
+        const allUnavailable = [...new Set([...safeOccupied, ...safeBlocked])]
+
+        setBlockedTimes(allUnavailable)
 
         setAvailableTimeSlots(
           (clinic.times || []).map((time) => ({
             time,
-            available: !safeBlocked.includes(time),
+            available: !allUnavailable.includes(time),
           }))
         )
 
@@ -169,18 +173,12 @@ export function ScheduleContent({ clinic }: ScheduleContentProps) {
         if (cancelled) return
 
         setBlockedTimes([])
-
         setAvailableTimeSlots(
-          (clinic.times || []).map((time) => ({
-            time,
-            available: true,
-          }))
+          (clinic.times || []).map((time) => ({ time, available: true }))
         )
       })
       .finally(() => {
-        if (!cancelled) {
-          setLoadingSlots(false)
-        }
+        if (!cancelled) setLoadingSlots(false)
       })
 
     return () => {

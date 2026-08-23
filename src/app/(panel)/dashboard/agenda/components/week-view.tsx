@@ -10,6 +10,7 @@ import {
 import { DayColumn } from "./day-column"
 import { AppointmentWithService } from "../../_components/appointments/appointments-list"
 import { generateTimeSlots } from "@/utils/calendar"
+import { ScheduleBlock } from "@prisma/client"
 
 const SLOT_HEIGHT = 40
 
@@ -17,10 +18,12 @@ export function WeekView({
   currentDate,
   appointments,
   times,
+  scheduleBlocks
 }: {
   currentDate: Date
   appointments: AppointmentWithService[]
   times: string[]
+  scheduleBlocks: ScheduleBlock[]
 }) {
   const days = Array.from({ length: 7 }, (_, index) =>
     addDays(
@@ -90,6 +93,7 @@ export function WeekView({
               day={day}
               appointments={appointments}
               times={gridTimes}
+              scheduleBlocks={scheduleBlocks}
             />
           ))}
         </div>
