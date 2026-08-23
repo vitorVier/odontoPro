@@ -15,6 +15,8 @@ model Appointment {
   time            String // horário escolhido
   source          AppointmentSource @default(DENTIST) // quem criou
   ipAddress       String?
+  confirmationSentAt DateTime?
+  reminderSentAt     DateTime?
 
   serviceId String // id do serviço agendado
   service   Service @relation(fields: [serviceId], references: [id])

@@ -8,6 +8,7 @@ import { headers } from 'next/headers'
 import { subMinutes } from 'date-fns'
 import { auth } from '@/lib/auth'
 import { findOrCreatePatient } from '@/utils/patients/find-or-create-patient'
+import { sendAppointmentConfirmation } from '@/lib/notifications/send-appointment-confirmation'
 
 const formSchema = z.object({
   name: z.string().min(1, "O nome é obrigatório"),
@@ -132,6 +133,24 @@ export async function createNewAppointment(formData: FormSchema) {
         ipAddress: isTrustedDashboardContext ? null : ip,
       },
     })
+
+    const appointmentWithService = await prisma.appointment.findUnique({
+      where: { id: newAppointment.id },
+      include: { service: true },
+    })
+
+    const clinic = await prisma.user.findUnique({
+      where: { id: formData.clinicId },
+      select: { name: true, phone: true },
+    })
+
+    if (appointmentWithService && clinic) {
+      sendAppointmentConfirmation({
+        appointment: appointmentWithService,
+        clinicName: clinic.name ?? "sua clínica",
+        clinicPhone: clinic.phone,
+      }).catch((err) => console.error("Falha ao enviar confirmação:", err))
+    }
 
     revalidatePath("/dashboard")
     return { data: newAppointment }
