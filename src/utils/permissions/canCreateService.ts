@@ -21,7 +21,7 @@ export async function canCreateService(subscription: Subscription | null, sessio
       const plan = subscription.plan;
       const planLimits = await getPlan(plan);
 
-      console.log("LIMITES DO SEU PLANO: ", planLimits)
+      // console.log("LIMITES DO SEU PLANO: ", planLimits)
 
       return {
         hasPermission: planLimits.maxServices === null || serviceCount < planLimits.maxServices,
