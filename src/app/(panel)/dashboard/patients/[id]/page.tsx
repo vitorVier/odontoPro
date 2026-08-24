@@ -20,6 +20,7 @@ import {
 import { getPatientById } from "../_data-acess/get-patient-by-id"
 import { PatientDetails } from "../components/patient-details"
 import { cn } from "@/lib/utils"
+import { PatientAppointmentList } from "./components/patient-appointment-list"
 
 interface PatientPageProps {
   params: Promise<{
@@ -207,7 +208,6 @@ export default async function PatientPage({
 
         {/* CONSULTAS */}
         <div className="space-y-6">
-
           {/* PRÓXIMAS CONSULTAS */}
           <Card className="border-border/50 shadow-xs">
             <CardHeader className="pb-4">
@@ -218,15 +218,10 @@ export default async function PatientPage({
             </CardHeader>
 
             <CardContent>
-              {patient.upcomingAppointments.length === 0 ? (
-                <EmptyAppointments
-                  text="Nenhuma consulta futura agendada."
-                />
-              ) : (
-                <AppointmentList
-                  appointments={patient.upcomingAppointments}
-                />
-              )}
+              <PatientAppointmentList
+                appointments={patient.upcomingAppointments}
+                emptyText="Nenhuma consulta futura agendada."
+              />
             </CardContent>
           </Card>
 
@@ -240,19 +235,12 @@ export default async function PatientPage({
             </CardHeader>
 
             <CardContent>
-              {patient.pastAppointments.length === 0 ? (
-                <EmptyAppointments
-                  text="Nenhuma consulta anterior registrada."
-                />
-              ) : (
-                <AppointmentList
-                  appointments={patient.pastAppointments}
-                  past
-                />
-              )}
+              <PatientAppointmentList
+                appointments={patient.pastAppointments}
+                emptyText="Nenhuma consulta anterior registrada."
+              />
             </CardContent>
           </Card>
-
         </div>
 
         {/* DADOS DO PACIENTE */}
