@@ -21,6 +21,8 @@ import { DialogAppointment } from './dialog-appointment'
 import { ButtonPickerAppointment } from './button-date'
 import { DialogNewAppointment } from './dialog-new-appointment'
 import { Service } from '@prisma/client'
+import { AppointmentStatusMenu } from '../../agenda/components/appointment-status-menu' 
+import { cn } from '@/lib/utils'
 
 export type AppointmentWithService = Prisma.AppointmentGetPayload<{
   include: {
@@ -33,6 +35,13 @@ interface AppointmentsListProps {
   clinicId: string
   clinicTimes: string[]
   services: Service[]
+}
+
+const STATUS_ACCENT = {
+  SCHEDULED: "before:bg-primary",
+  COMPLETED: "before:bg-emerald-500",
+  NO_SHOW: "before:bg-amber-500",
+  CANCELED: "before:bg-muted-foreground/40 opacity-60",
 }
 
 export function AppointmentsList({ times, clinicId, clinicTimes, services }: AppointmentsListProps) {
@@ -101,6 +110,15 @@ export function AppointmentsList({ times, clinicId, clinicTimes, services }: App
     queryClient.invalidateQueries({ queryKey: ["get-appointments"] })
     await refetch()
     toast.success(response.data);
+  }
+
+  async function handleAppointmentStatusChanged() {
+    const result = await refetch()
+
+    if (detailAppointment && result.data) {
+      const updated = result.data.find((a) => a.id === detailAppointment.id)
+      if (updated) setDetailAppointment(updated)
+    }
   }
 
   return (
@@ -173,20 +191,32 @@ export function AppointmentsList({ times, clinicId, clinicTimes, services }: App
                       return (
                         <div
                           key={slot}
-                          className='group flex items-center p-3 rounded-xl bg-card border border-border/50 shadow-[0_2px_10px_-3px_rgba(0,0,0,0.01)] transition-all hover:border-primary/40 hover:shadow-xs relative overflow-hidden before:absolute before:left-0 before:top-2 before:bottom-2 before:w-1 before:bg-primary before:rounded-r-md'
+                          className={cn(
+                            'group flex items-center p-3 rounded-xl bg-card border border-border/50 shadow-[0_2px_10px_-3px_rgba(0,0,0,0.01)] transition-all hover:border-primary/40 hover:shadow-xs relative overflow-hidden before:absolute before:left-0 before:top-2 before:bottom-2 before:w-1 before:rounded-r-md',
+                            STATUS_ACCENT[occupant.status]
+                          )}
                         >
                           <div className='w-16 text-sm font-extrabold text-foreground ml-1'>
                             {slot}
                           </div>
 
                           <div className='flex-1 flex flex-col justify-center min-w-0 px-2 space-y-0.5'>
-                            <div className='font-bold text-foreground truncate text-sm group-hover:text-primary transition-colors'>
+                            <div className={cn(
+                              'font-bold text-foreground truncate text-sm group-hover:text-primary transition-colors',
+                              occupant.status === "CANCELED" && "line-through"
+                            )}>
                               {occupant.name}
                             </div>
                             <div className='flex items-center gap-1.5 text-xs text-muted-foreground truncate pl-0.5'>
                               <span className="font-medium">{occupant.phone}</span>
                               <span className="w-1 h-1 rounded-full bg-border" />
                               <span className="truncate bg-muted px-1.5 py-0.5 rounded text-[11px] font-semibold text-muted-foreground">{occupant.service?.name}</span>
+                              {occupant.status === "COMPLETED" && (
+                                <span className="truncate bg-emerald-500/10 text-emerald-600 px-1.5 py-0.5 rounded text-[11px] font-semibold">Concluída</span>
+                              )}
+                              {occupant.status === "NO_SHOW" && (
+                                <span className="truncate bg-amber-500/10 text-amber-600 px-1.5 py-0.5 rounded text-[11px] font-semibold">Faltou</span>
+                              )}
                             </div>
                           </div>
 
@@ -204,6 +234,13 @@ export function AppointmentsList({ times, clinicId, clinicTimes, services }: App
                                 <Eye className='w-3.5 h-3.5' />
                               </Button>
                             </DialogTrigger>
+
+                            <AppointmentStatusMenu
+                              appointmentId={occupant.id}
+                              currentStatus={occupant.status}
+                              onChanged={refetch}
+                              triggerClassName="h-7 w-7 flex items-center justify-center rounded-md text-muted-foreground hover:text-primary hover:bg-muted"
+                            />
 
                             <Button
                               type="button"
@@ -242,7 +279,11 @@ export function AppointmentsList({ times, clinicId, clinicTimes, services }: App
           </CardContent>
         </Card>
 
-        <DialogAppointment appointment={detailAppointment} />
+        <DialogAppointment 
+          key={detailAppointment?.id ?? "none"}
+          appointment={detailAppointment}
+          onChanged={handleAppointmentStatusChanged}
+        />
       </Dialog>
 
       <DialogNewAppointment

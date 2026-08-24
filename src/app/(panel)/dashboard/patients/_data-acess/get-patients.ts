@@ -41,6 +41,14 @@ export async function getPatients({ search }: GetPatientsParams = {}) {
       orderBy: { name: "asc" },
     })
 
+    const patientIds = patients.map((p) => p.id)
+    const noShowCounts = await prisma.appointment.groupBy({
+      by: ["patientId"],
+      where: { patientId: { in: patientIds }, status: "NO_SHOW" },
+      _count: { id: true },
+    })
+    const noShowMap = new Map(noShowCounts.map((n) => [n.patientId, n._count.id]))
+
     const data = patients.map((patient) => ({
       id: patient.id,
       name: patient.name,
@@ -49,6 +57,7 @@ export async function getPatients({ search }: GetPatientsParams = {}) {
       birthDate: patient.birthDate,
       totalAppointments: patient._count.appointments,
       lastVisit: patient.appointments[0]?.appointmentDate ?? null,
+      noShowCount: noShowMap.get(patient.id) ?? 0,
     }))
 
     return { data }

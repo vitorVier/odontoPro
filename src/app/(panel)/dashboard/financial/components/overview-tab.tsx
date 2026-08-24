@@ -44,8 +44,8 @@ export function OverviewTab({ data, loading, onRefresh }: OverviewTabProps) {
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         <KpiCard title="A receber" value={formatCurrency(summary.pendingIncome / 100)} icon={TrendingUp} subtitle="Pendente no mês" />
         <KpiCard title="A pagar" value={formatCurrency(summary.pendingExpense / 100)} icon={TrendingDown} subtitle="Pendente no mês" className="text-red-500 dark:text-red-500/80" />
-        <KpiCard title="Recebido" value={formatCurrency(summary.totalIncome / 100)} icon={Wallet} subtitle="Total no mês" className="text-primary dark:text-primary" />
-        <KpiCard title="Saldo do mês" value={formatCurrency(summary.balance / 100)} icon={Scale} subtitle="Receitas - despesas" className={ summary.balance === 0 ? "text-foreground" : summary.balance >= 0 ? "text-primary" : "text-red-500/80" }/>
+        <KpiCard title="Recebido" value={formatCurrency(summary.totalIncome / 100)} icon={Wallet} subtitle={`Consultas: ${formatCurrency(summary.breakdown.appointmentIncome / 100)} · Manual: ${formatCurrency(summary.breakdown.manualIncome / 100)}`} className="text-primary dark:text-primary" />
+        <KpiCard title="Saldo do mês" value={formatCurrency(summary.balance / 100)} icon={Scale} subtitle={`Consultas: ${formatCurrency(summary.breakdown.appointmentPendingIncome / 100)} · Manual: ${formatCurrency(summary.breakdown.manualPendingIncome / 100)}`} className={ summary.balance === 0 ? "text-foreground" : summary.balance >= 0 ? "text-primary" : "text-red-500/80" }/>
       </div>
 
       <Card className="border-border/50 shadow-xs">

@@ -27,11 +27,13 @@ export function DayColumn({
   appointments,
   times,
   scheduleBlocks,
+  onChanged,
 }: {
   day: Date
   appointments: AppointmentWithService[]
   times: string[]
   scheduleBlocks: ScheduleBlock[]
+  onChanged: () => void
 }) {
   if (!times.length) {
     return (
@@ -112,6 +114,7 @@ export function DayColumn({
             appointment={appointment}
             top={top}
             height={height}
+            onChanged={onChanged}
           />
         )
       })}

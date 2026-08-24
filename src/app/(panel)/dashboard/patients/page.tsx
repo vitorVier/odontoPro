@@ -2,6 +2,7 @@ import Link from "next/link"
 import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
 import {
+  AlertTriangle,
   CalendarDays,
   ChevronRight,
   Mail,
@@ -43,7 +44,6 @@ export default async function PatientsPage({
 
   return (
     <main className="mx-auto w-full max-w-[1600px] space-y-4 px-4 py-4 sm:space-y-6 sm:px-6 sm:py-6">
-
       {/* HEADER */}
       <Card className="border-border/50 shadow-xs">
         <CardHeader className="flex flex-col gap-4 pb-5 sm:flex-row sm:items-center sm:justify-between">
@@ -125,7 +125,6 @@ export default async function PatientsPage({
             </div>
           ) : (
             <div className="divide-y divide-border/50">
-
               {patients.map((patient) => (
                 <Link
                   key={patient.id}
@@ -133,7 +132,6 @@ export default async function PatientsPage({
                   className="group block transition-colors hover:bg-muted/30"
                 >
                   <div className="flex flex-col gap-4 px-4 py-4 sm:px-5 md:flex-row md:items-center md:justify-between">
-
                     {/* IDENTIFICAÇÃO */}
                     <div className="flex min-w-0 items-center gap-4">
                       <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-bold text-primary">
@@ -146,8 +144,15 @@ export default async function PatientsPage({
                       </div>
 
                       <div className="min-w-0">
-                        <h3 className="truncate font-semibold text-foreground group-hover:text-primary">
+                        <h3 className="truncate flex gap-2 font-semibold text-foreground group-hover:text-primary">
                           {patient.name}
+
+                          {patient.noShowCount >= 2 && (
+                            <span className="inline-flex shrink-0 items-center gap-1 rounded-md bg-amber-500/10 px-2 py-0.5 text-[11px] font-semibold text-amber-700 dark:text-amber-400">
+                              <AlertTriangle className="h-3 w-3" />
+                              {patient.noShowCount} faltas
+                            </span>
+                          )}
                         </h3>
 
                         <div className="mt-1 flex flex-col gap-y-1 text-xs text-muted-foreground sm:flex-row sm:flex-wrap sm:gap-x-4">
@@ -199,10 +204,8 @@ export default async function PatientsPage({
                   </div>
                 </Link>
               ))}
-
             </div>
           )}
-
         </CardContent>
       </Card>
     </main>

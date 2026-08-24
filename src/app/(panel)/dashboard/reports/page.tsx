@@ -9,7 +9,8 @@ import { PageContainer, PageHeader } from '@/components/ui/page-layout'
 import {
   Lock, Sparkles, ArrowRight, BarChart3,
   TrendingUp, CheckCircle2, CalendarCheck2,
-  Banknote, Ticket, Folder, ShieldAlert
+  Banknote, Ticket, Folder, ShieldAlert,
+  UserCheck
 } from 'lucide-react'
 import { formatCurrency } from '@/utils/formatCurrency'
 import { KpiCard } from './_components/kpi-card'
@@ -18,6 +19,7 @@ import { MonthlyChart } from './_components/monthly-chart'
 import { TopServices } from './_components/top-services'
 import { UpcomingAppointments } from './_components/upcoming-appointments'
 import { calcDelta } from '@/utils/calcDelta'
+import { getShowRate } from './_data-access/get-show-rate'
 
 export default async function Reports() {
   const session = await getSession()
@@ -90,8 +92,8 @@ export default async function Reports() {
     )
   }
 
-  // ───── CENÁRIO 2: COM PERMISSÃO (GRADE COMPLETA DO DASHBOARD) ─────
   const data = await getReportsData({ userId })
+  const showRate = await getShowRate({ userId })
 
   const appointmentsDelta = calcDelta(
     data?.appointmentsThisMonth ?? 0,
@@ -122,6 +124,12 @@ export default async function Reports() {
           value={String(data?.appointmentsThisMonth ?? 0)}
           icon={CalendarCheck2}
           delta={appointmentsDelta}
+        />
+        <KpiCard
+          title="Taxa de comparecimento"
+          value={showRate.rate !== null ? `${showRate.rate.toFixed(0)}%` : "—"}
+          icon={UserCheck}
+          subtitle={showRate.rate !== null ? `${showRate.completed} concluídas, ${showRate.noShow} faltas` : "Sem dados suficientes"}
         />
         <KpiCard
           title="Serviços ativos"

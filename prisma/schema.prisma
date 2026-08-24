@@ -6,6 +6,13 @@ datasource db {
   provider = "postgresql"
 }
 
+enum AppointmentStatus {
+  SCHEDULED
+  COMPLETED
+  NO_SHOW
+  CANCELED
+}
+
 model Appointment {
   id              String            @id @default(uuid())
   name            String // Nome do pacient
@@ -13,6 +20,7 @@ model Appointment {
   phone           String
   appointmentDate DateTime // Data do agendamento
   time            String // horário escolhido
+  status AppointmentStatus @default(SCHEDULED)
   source          AppointmentSource @default(DENTIST) // quem criou
   ipAddress       String?
   confirmationSentAt DateTime?

@@ -318,6 +318,7 @@ export default function AgendaPage({ userId, times, scheduleBlocks: initialSched
                         appointments={appointments}
                         times={times}
                         scheduleBlocks={scheduleBlocks}
+                        onChanged={fetchAgenda}
                     />
                 ) : (
                     <MonthView

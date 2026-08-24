@@ -18,12 +18,14 @@ export function WeekView({
   currentDate,
   appointments,
   times,
-  scheduleBlocks
+  scheduleBlocks,
+  onChanged,
 }: {
   currentDate: Date
   appointments: AppointmentWithService[]
   times: string[]
   scheduleBlocks: ScheduleBlock[]
+  onChanged: () => void
 }) {
   const days = Array.from({ length: 7 }, (_, index) =>
     addDays(
@@ -94,6 +96,7 @@ export function WeekView({
               appointments={appointments}
               times={gridTimes}
               scheduleBlocks={scheduleBlocks}
+              onChanged={onChanged}
             />
           ))}
         </div>

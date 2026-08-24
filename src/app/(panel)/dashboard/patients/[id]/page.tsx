@@ -3,11 +3,13 @@ import { notFound } from "next/navigation"
 
 import {
   ArrowLeft,
+  CalendarClock,
   CalendarDays,
+  ClipboardCheck,
   ClipboardList,
+  UserX,
 } from "lucide-react"
 
-import { Button } from "@/components/ui/button"
 import {
   Card,
   CardContent,
@@ -17,6 +19,7 @@ import {
 
 import { getPatientById } from "../_data-acess/get-patient-by-id"
 import { PatientDetails } from "../components/patient-details"
+import { cn } from "@/lib/utils"
 
 interface PatientPageProps {
   params: Promise<{
@@ -36,6 +39,20 @@ export default async function PatientPage({
   }
 
   const patient = result.data
+
+  const noShowCount =
+    patient.appointments.filter(
+      (appointment) => appointment.status === "NO_SHOW"
+    ).length
+
+  const totalAppointments = patient.appointments.length
+
+  const noShowRate =
+    totalAppointments > 0
+      ? noShowCount / totalAppointments : 0
+
+  const hasWarning =
+    totalAppointments >= 5 && noShowRate >= 0.2
 
   const initials = patient.name
     .split(" ")
@@ -83,27 +100,103 @@ export default async function PatientPage({
 
             {/* RESUMO */}
             <div className="grid grid-cols-2 gap-3 sm:flex">
+              {/* CONSULTAS */}
+              <div className="min-w-28 rounded-xl border border-border/50 bg-card px-4 py-3">
+                <div className="flex items-center justify-between gap-3">
+                  <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+                    Consultas
+                  </p>
 
-              <div className="min-w-28 rounded-xl border bg-muted/20 px-4 py-3">
-                <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
-                  Consultas
+                  <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-muted">
+                    <ClipboardCheck className="h-3.5 w-3.5 text-muted-foreground" />
+                  </div>
+                </div>
+
+                <p className="mt-2 text-xl font-bold tracking-tight">
+                  {totalAppointments}
                 </p>
 
-                <p className="mt-1 text-lg font-bold">
-                  {patient.appointments.length}
+                <p className="mt-0.5 text-[11px] text-muted-foreground">
+                  consultas realizadas
                 </p>
               </div>
 
-              <div className="min-w-28 rounded-xl border bg-muted/20 px-4 py-3">
-                <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
-                  Próximas
-                </p>
+              {/* PRÓXIMAS */}
+              <div className="min-w-28 rounded-xl border border-primary/15 bg-primary/5 px-4 py-3">
+                <div className="flex items-center justify-between gap-3">
+                  <p className="text-[11px] font-medium uppercase tracking-wide text-primary/80">
+                    Próximas
+                  </p>
 
-                <p className="mt-1 text-lg font-bold text-primary">
+                  <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary/10">
+                    <CalendarClock className="h-3.5 w-3.5 text-primary" />
+                  </div>
+                </div>
+
+                <p className="mt-2 text-xl font-bold tracking-tight text-primary">
                   {patient.upcomingAppointments.length}
                 </p>
+
+                <p className="mt-0.5 text-[11px] text-muted-foreground">
+                  consultas agendadas
+                </p>
               </div>
 
+              {/* FALTAS */}
+              <div
+                className={cn(
+                  "min-w-28 rounded-xl border px-4 py-3 transition-colors",
+                  hasWarning
+                    ? "border-amber-500/20 bg-amber-500/5"
+                    : "border-border/50 bg-card"
+                )}
+              >
+                <div className="flex items-center justify-between gap-3">
+                  <p
+                    className={cn(
+                      "text-[11px] font-medium uppercase tracking-wide",
+                      hasWarning
+                        ? "text-amber-700"
+                        : "text-muted-foreground"
+                    )}
+                  >
+                    Faltas
+                  </p>
+
+                  <div
+                    className={cn(
+                      "flex h-7 w-7 items-center justify-center rounded-lg",
+                      hasWarning
+                        ? "bg-amber-500/10"
+                        : "bg-muted"
+                    )}
+                  >
+                    <UserX
+                      className={cn(
+                        "h-3.5 w-3.5",
+                        hasWarning
+                          ? "text-amber-600"
+                          : "text-muted-foreground"
+                      )}
+                    />
+                  </div>
+                </div>
+
+                <p
+                  className={cn(
+                    "mt-2 text-xl font-bold tracking-tight",
+                    hasWarning
+                      ? "text-amber-600"
+                      : "text-foreground"
+                  )}
+                >
+                  {noShowCount}
+                </p>
+
+                <p className="mt-0.5 text-[11px] text-muted-foreground">
+                  {Math.round(noShowRate * 100)}% das consultas
+                </p>
+              </div>
             </div>
           </div>
         </CardContent>
