@@ -118,7 +118,7 @@ export default async function Reports() {
       </PageHeader>
 
       {/* ── Seção: KPIs Principais do Topo ── */}
-      <div className="grid grid-cols-1 gap-4 xs:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
         <KpiCard
           title="Agendamentos este mês"
           value={String(data?.appointmentsThisMonth ?? 0)}
@@ -152,13 +152,13 @@ export default async function Reports() {
       </div>
 
       {/* ── Seção: Gráficos de Fluxo e Tendência ── */}
-      <div className="grid grid-cols-1 gap-5 md:grid-cols-2 md:gap-6">
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-2 lg:gap-6">
         <MonthlyChart data={data?.last6Months ?? []} />
         <WeekdayChart data={data?.byWeekday ?? []} />
       </div>
 
       {/* ── Seção: Tabelas de Rankings e Próximas Consultas ── */}
-      <div className="grid grid-cols-1 gap-5 md:grid-cols-2 md:gap-6">
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-2 lg:gap-6">
         <TopServices data={data?.topServices ?? []} />
         <UpcomingAppointments appointments={data?.upcomingAppointments ?? []} />
       </div>
