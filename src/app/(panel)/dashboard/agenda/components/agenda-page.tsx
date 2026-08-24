@@ -275,12 +275,12 @@ export default function AgendaPage({ userId, times, scheduleBlocks: initialSched
 
             <section className="w-full flex justify-between items-center px-2 gap-2">
                 {/* VISUALIZAÇÃO */}
-                <div className="flex rounded-xl border bg-muted/30 p-1">
+                <div className="flex rounded-full border bg-muted/30 p-1">
                     <Button
-                        variant={view === "week" ? "secondary" : "ghost"}
+                        variant={view === "week" ? "emerald" : "secondary"}
                         size="sm"
                         className={cn(
-                            "h-8 rounded-lg px-3",
+                            "h-8 rounded-full px-3",
                             view === "week" && "shadow-xs"
                         )}
                         onClick={() => setView("week")}
@@ -289,10 +289,10 @@ export default function AgendaPage({ userId, times, scheduleBlocks: initialSched
                     </Button>
 
                     <Button
-                        variant={view === "month" ? "secondary" : "ghost"}
+                        variant={view === "month" ? "emerald" : "secondary"}
                         size="sm"
                         className={cn(
-                            "h-8 rounded-lg px-3",
+                            "h-8 rounded-full px-3",
                             view === "month" && "shadow-xs"
                         )}
                         onClick={() => setView("month")}

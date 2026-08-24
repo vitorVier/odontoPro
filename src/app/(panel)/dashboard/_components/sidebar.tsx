@@ -32,9 +32,11 @@ import {
   Calendar,
   LayoutDashboard,
   Users,
+  Wallet,
 } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { getPermissionUserToReports } from "../reports/_data-access/get-permission-reprots";
+import { getPermissionUserToFinancial } from "@/utils/permissions/get-permission-financial";
 import Image from "next/image";
 
 interface NavigationItem {
@@ -47,6 +49,7 @@ interface NavigationItem {
 export function SidebarDashboard({ children }: { children: React.ReactNode }) {
   const { data: session } = useSession();
   const [hasReportAccess, setHasReportAccess] = useState(false);
+  const [hasFinancialAccess, setHasFinancialAccess] = useState(false);
   const pathname = usePathname();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
@@ -56,6 +59,9 @@ export function SidebarDashboard({ children }: { children: React.ReactNode }) {
       if (session?.user?.id) {
         const hasAccess = await getPermissionUserToReports({ userId: session.user.id });
         setHasReportAccess(Boolean(hasAccess));
+
+        const hasFinancial = await getPermissionUserToFinancial({ userId: session.user.id });
+        setHasFinancialAccess(Boolean(hasFinancial));
       }
     }
 
@@ -87,6 +93,16 @@ export function SidebarDashboard({ children }: { children: React.ReactNode }) {
       icon: Users,
       category: "Painel",
     },
+    ...(hasFinancialAccess
+      ? [
+        {
+          href: "/dashboard/financial",
+          label: "Financeiro",
+          icon: Wallet,
+          category: "Painel",
+        },
+      ]
+      : []),
     ...(hasReportAccess
       ? [
         {

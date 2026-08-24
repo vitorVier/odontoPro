@@ -30,6 +30,38 @@ interface DialogServiceProps {
   }
 }
 
+// Função isolada e pura apenas para formatar a string, compatível com o onChange do RHF
+export function handleCurrencyChange(
+  event: React.ChangeEvent<HTMLInputElement>,
+  onChange: (value: string | number) => void,
+  options?: {
+    output?: "string" | "number"
+  }
+) {
+  const output = options?.output ?? "string"
+
+  const rawValue = event.target.value.replace(/\D/g, "")
+
+  if (!rawValue) {
+    onChange(output === "number" ? 0 : "")
+    return
+  }
+
+  const numericValue = Number(rawValue) / 100
+
+  if (output === "number") {
+    onChange(numericValue)
+    return
+  }
+
+  const formattedValue = numericValue
+    .toFixed(2)
+    .replace(".", ",")
+    .replace(/\B(?=(\d{3})+(?!\d))/g, ".")
+
+  onChange(formattedValue)
+}
+
 export function DialogService({ closeModal, initialValues, serviceId }: DialogServiceProps) {
   const form = useDialogServiceForm({ initialValues })
   const router = useRouter();
@@ -76,22 +108,6 @@ export function DialogService({ closeModal, initialValues, serviceId }: DialogSe
   function handleCloseModal() {
     form.reset();
     closeModal();
-  }
-
-  // Função isolada e pura apenas para formatar a string, compatível com o onChange do RHF
-  function handleCurrencyChange(
-    event: React.ChangeEvent<HTMLInputElement>,
-    onChange: (value: string) => void
-  ) {
-    let value = event.target.value.replace(/\D/g, '');
-
-    if (value) {
-      value = (parseInt(value, 10) / 100).toFixed(2);
-      value = value.replace('.', ',');
-      value = value.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-    }
-
-    onChange(value);
   }
 
   return (

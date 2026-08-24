@@ -17,11 +17,7 @@ import { WeekdayChart } from './_components/weekday-chart'
 import { MonthlyChart } from './_components/monthly-chart'
 import { TopServices } from './_components/top-services'
 import { UpcomingAppointments } from './_components/upcoming-appointments'
-
-function calcDelta(current: number, previous: number) {
-  if (previous === 0) return current > 0 ? 100 : 0
-  return ((current - previous) / previous) * 100
-}
+import { calcDelta } from '@/utils/calcDelta'
 
 export default async function Reports() {
   const session = await getSession()

@@ -19,6 +19,7 @@ interface KpiCardProps {
   subtitle?: string
   icon: React.ComponentType<{ className?: string }>
   delta?: number
+  className?: string
 }
 
 function DeltaBadge({ delta }: { delta: number }) {
@@ -60,6 +61,7 @@ export function KpiCard({
   subtitle,
   icon: Icon,
   delta,
+  className
 }: KpiCardProps) {
   return (
     <Card className="border-border/50 bg-card shadow-xs">
@@ -78,7 +80,12 @@ export function KpiCard({
 
       <CardContent className="pt-0">
 
-        <div className="text-2xl font-bold tracking-tight text-foreground">
+        <div
+          className={cn(
+            "text-2xl font-bold tracking-tight text-foreground",
+            className
+          )}
+        >
           {value}
         </div>
 

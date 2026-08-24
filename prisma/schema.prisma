@@ -112,6 +112,7 @@ model User {
   patients Patient[]
   Authenticator Authenticator[]
   scheduleBlocks ScheduleBlock[]
+  financialTransactions FinancialTransaction[]
 
   createdAt              DateTime @default(now())
   updatedAt              DateTime @updatedAt
@@ -213,4 +214,33 @@ model ScheduleBlock {
   updatedAt DateTime @updatedAt
 
   @@index([userId, startDate])
+}
+
+enum TransactionType {
+  INCOME
+  EXPENSE
+}
+
+enum TransactionStatus {
+  PENDING
+  PAID
+}
+
+model FinancialTransaction {
+  id          String             @id @default(cuid())
+  description String
+  amount      Int                // em centavos, mesmo padrão de Service.price
+  type        TransactionType
+  status      TransactionStatus  @default(PENDING)
+  category    String?            // ex: "Material", "Aluguel", "Consulta avulsa"
+  dueDate     DateTime
+  paidAt      DateTime?
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId, dueDate])
 }
