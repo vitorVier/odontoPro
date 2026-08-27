@@ -1,5 +1,6 @@
 import getSesion from '@/lib/getSession'
 import { redirect } from 'next/navigation'
+import prisma from '@/lib/prisma'
 import { ButtonCopyLink } from './_components/button-copy-link'
 import { Reminders } from './_components/reminder/reminders'
 import { Appointments } from './_components/appointments/appointments'
@@ -8,6 +9,9 @@ import { LabelSubscription } from '@/components/ui/label-subscription'
 import { PageContainer, PageHeader } from "@/components/ui/page-layout"
 import { getNewAppointments } from './_data-access/get-new-appointments'
 import { NewAppointmentsNotifier } from './_components/new-appointments-notifier'
+import { OnboardingModal } from './_components/onboarding/onboarding-modal'
+import { getPendingReconciliationCount } from '@/utils/agenda/get-pending-reconciliation-count'
+import { ReconciliationAlert } from './_components/reconciliation-alert'
 
 export default async function Dashboard() {
   const session = await getSesion()
@@ -19,8 +23,24 @@ export default async function Dashboard() {
   const subscription = await checkSubscription(session?.user?.id!)
   const newAppointments = await getNewAppointments(session?.user?.id!)
 
+  const user = await prisma.user.findUnique({
+    where: { id: session.user?.id! },
+    select: {
+      name: true,
+      onboardingCompletedAt: true,
+      onboardingSkippedAt: true,
+    },
+  })
+
+  const shouldShowOnboarding = user && !user.onboardingCompletedAt && !user.onboardingSkippedAt
+  const pendingReconciliation = await getPendingReconciliationCount()
+
   return (
     <PageContainer className="space-y-6">
+      {shouldShowOnboarding && (
+        <OnboardingModal userId={session.user?.id!} userName={user.name} />
+      )}
+
       <NewAppointmentsNotifier appointments={newAppointments} userId={session.user?.id!} />
       <PageHeader 
         title="Visão Geral" 
@@ -28,6 +48,10 @@ export default async function Dashboard() {
       >
         <ButtonCopyLink userId={session.user?.id!} />
       </PageHeader>
+
+      {pendingReconciliation > 0 && (
+        <ReconciliationAlert count={pendingReconciliation} />
+      )}
 
       {subscription?.subscriptionStatus === "EXPIRED" && (
         <LabelSubscription variant="expired" />
@@ -47,7 +71,6 @@ export default async function Dashboard() {
           </div>
         </section>
       )}
-
     </PageContainer>
   )
 }

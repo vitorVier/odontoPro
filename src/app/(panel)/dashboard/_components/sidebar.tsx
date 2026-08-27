@@ -38,12 +38,14 @@ import { useSession } from "next-auth/react";
 import { getPermissionUserToReports } from "../reports/_data-access/get-permission-reprots";
 import { getPermissionUserToFinancial } from "@/utils/permissions/get-permission-financial";
 import Image from "next/image";
+import { getPendingReconciliationCount } from "@/utils/agenda/get-pending-reconciliation-count";
 
 interface NavigationItem {
   href: string;
   label: string;
   icon: React.ComponentType<{ className?: string }>;
   category?: string;
+  badge?: number
 }
 
 export function SidebarDashboard({ children }: { children: React.ReactNode }) {
@@ -53,6 +55,7 @@ export function SidebarDashboard({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const [pendingReconciliation, setPendingReconciliation] = useState(0)
 
   useEffect(() => {
     async function checkPermission() {
@@ -62,6 +65,9 @@ export function SidebarDashboard({ children }: { children: React.ReactNode }) {
 
         const hasFinancial = await getPermissionUserToFinancial({ userId: session.user.id });
         setHasFinancialAccess(Boolean(hasFinancial));
+
+        const pending = await getPendingReconciliationCount()
+        setPendingReconciliation(pending)
       }
     }
 
@@ -80,6 +86,7 @@ export function SidebarDashboard({ children }: { children: React.ReactNode }) {
       label: "Agenda",
       icon: Calendar,
       category: "Painel",
+      badge: pendingReconciliation > 0 ? pendingReconciliation : undefined,
     },
     {
       href: "/dashboard/services",
@@ -291,6 +298,7 @@ interface SidebarLinkProps {
   icon: React.ComponentType<{ className?: string }>;
   pathname: string;
   isCollapsed: boolean;
+  badge?: number
   onClick?: () => void;
 }
 
@@ -300,6 +308,7 @@ function SidebarLink({
   icon: Icon,
   pathname,
   isCollapsed,
+  badge,
   onClick,
 }: SidebarLinkProps) {
   const isActive = pathname === href;
@@ -320,6 +329,14 @@ function SidebarLink({
     >
       <Icon className={clsx("shrink-0", { "w-5 h-5": !isCollapsed, "w-6 h-6": isCollapsed })} />
       {!isCollapsed && <span className="truncate">{label}</span>}
+      {!isCollapsed && badge !== undefined && (
+        <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-amber-500 px-1.5 text-[10px] font-bold text-white">
+          {badge}
+        </span>
+      )}
+      {isCollapsed && badge !== undefined && (
+        <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-amber-500" />
+      )}
     </Link>
   );
 
