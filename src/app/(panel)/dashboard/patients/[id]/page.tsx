@@ -21,6 +21,9 @@ import { getPatientById } from "../_data-acess/get-patient-by-id"
 import { PatientDetails } from "../components/patient-details"
 import { cn } from "@/lib/utils"
 import { PatientAppointmentList } from "./components/patient-appointment-list"
+import { getPermissionUserToDentalRecord } from "@/utils/permissions/get-permission-dental-record"
+import { getDentalRecord } from "./_data-access/get-dental-record"
+import { DentalRecord } from "./components/dental-record"
 
 interface PatientPageProps {
   params: Promise<{
@@ -62,6 +65,9 @@ export default async function PatientPage({
     .map((name) => name[0])
     .join("")
     .toUpperCase()
+
+  const hasPermission = await getPermissionUserToDentalRecord({ userId: patient.userId })
+  const dentalResult = await getDentalRecord(id)
 
   return (
     <main className="mx-auto w-full max-w-[1600px] space-y-6">
@@ -245,7 +251,12 @@ export default async function PatientPage({
 
         {/* DADOS DO PACIENTE */}
         <PatientDetails patient={patient} />
-
+        <DentalRecord
+          patientId={id}
+          hasPermission={hasPermission}
+          toothRecords={dentalResult.data?.toothRecords ?? []}
+          clinicalRecords={dentalResult.data?.clinicalRecords ?? []}
+        />
       </div>
     </main>
   )

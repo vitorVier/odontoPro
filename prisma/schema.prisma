@@ -25,6 +25,7 @@ model Appointment {
   ipAddress       String?
   confirmationSentAt DateTime?
   reminderSentAt     DateTime?
+  clinicalRecords ClinicalRecord[]
 
   serviceId String // id do serviço agendado
   service   Service @relation(fields: [serviceId], references: [id])
@@ -139,6 +140,8 @@ model Patient {
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   appointments Appointment[]
+  toothRecords     ToothRecord[]
+  clinicalRecords  ClinicalRecord[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -251,4 +254,48 @@ model FinancialTransaction {
   updatedAt DateTime @updatedAt
 
   @@index([userId, dueDate])
+}
+
+
+enum ToothCondition {
+  HEALTHY
+  CAVITY
+  RESTORED
+  ROOT_CANAL
+  CROWN
+  EXTRACTED
+  MISSING
+  IMPLANT
+}
+
+model ToothRecord {
+  id        String         @id @default(cuid())
+  toothNumber Int          // notação FDI: 11-18, 21-28, 31-38, 41-48 (dentição adulta)
+  condition   ToothCondition @default(HEALTHY)
+  notes       String?
+
+  patientId String
+  patient   Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
+
+  updatedAt DateTime @updatedAt
+
+  @@unique([patientId, toothNumber])
+}
+
+model ClinicalRecord {
+  id          String   @id @default(cuid())
+  title       String
+  description String
+
+  patientId String
+  patient   Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
+
+  appointmentId String?
+  appointment   Appointment? @relation(fields: [appointmentId], references: [id], onDelete: SetNull)
+
+  userId String // clínica/dentista que registrou
+
+  createdAt DateTime @default(now())
+
+  @@index([patientId, createdAt])
 }
